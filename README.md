@@ -1,9 +1,9 @@
-# VueServer
+# VuePage
 
 Implement server-side of ViewModel for `Vue` to old-but-good ASP.NET 4.5 website
 
 ```C#
-public class SimpleViewModel : Vue.ViewModel<SimpleViewModel>
+public class PageViewModel : Vue.ViewModel<PageViewModel>
 {
     public Username { get; set; }
     public Password { get; set; }
@@ -24,20 +24,8 @@ public class SimpleViewModel : Vue.ViewModel<SimpleViewModel>
 </vue:App>
 ```
 
-# TODO
-
-- Computed resolution using Linq expression (simple linq expressions, like `x => x.Username + "-" + x.Age`
-
-- Vue property (VueOptions) in ViewModel could be define all new Vue javascript	
-- Vue.Update("jsCode");
-- Vue.BeforeMount("jsCode");
-- Vue.El("el");
-- Vue.Directives(jsCode, jsInclude)
+- Supports C# lambda expression to convert to computed javascript field
+- Supports history navigation
 
 
-
-# SPA-Mobile
-- Load page from ajax (js History)
-- Work back button as expected
-- MasterPage or Component?
 
