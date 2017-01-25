@@ -1,0 +1,66 @@
+﻿<%@ Page Title="Page 1" Language="C#" %>
+<script runat="server">
+
+    public class VM : Vue.ViewModel<VM>
+    {
+        public string CurrentText { get; set; } = "";
+        public List<Todo> Items { get; set; } = new List<Todo>();
+
+        public VM()
+        {
+            Computed("First", x => x.Items.Count == 0 ? "[none]" : x.Items[0].Text);
+            Computed("FirstSelected", x => x.Items.Where(z => z.Done).Count() == 0 ? "[none]" : x.Items.Where(z => z.Done).First().Text);
+            Computed("FirstSel", x => x.Items.First(z => z.Done));
+        }
+
+        protected override void Created()
+        {
+            Items.Add(new Todo { Text = "My first demo" });
+            Items.Add(new Todo { Text = "Was done", Done = true });
+        }
+
+        public void Add()
+        {
+            Items.Add(new Todo { Text = CurrentText, Done = false });
+        }
+
+        public void Remove(int index)
+        {
+            Items.RemoveAt(index);
+        }
+
+        public void Clear()
+        {
+            Items.RemoveAll(x => x.Done);
+        }
+    }
+
+    public class Todo
+    {
+        public string Text { get; set; }
+        public bool Done { get; set; }
+    }
+
+</script>
+<asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
+
+    <h2>Page 1</h2>
+    <hr />
+
+    <input type="text" v-model="CurrentText" autofocus />
+    <button v-on:click="Add()" :disabled="!CurrentText" type="button">Add</button>
+    <hr />
+    <ul>
+        <li v-for="(Item, i) in Items">
+            <input type="checkbox" v-model="Item.Done" />
+            <span :style="{ 'text-decoration': Item.Done ? 'line-through' : 'none' }">
+                {{ Item.Text }}
+            </span>
+            <button v-on:click.prevent="Remove(i)" :disabled="Item.Done" type="submit">X</button>
+        </li>
+    </ul>
+    First: {{First}}<br />
+    FirstSelected: {{FirstSelected}}<br />
+    FirstSelected: {{FirstSel}}<br />
+
+</asp:Content>

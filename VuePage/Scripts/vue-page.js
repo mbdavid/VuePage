@@ -1,0 +1,275 @@
+﻿(function () {
+
+    var container = document.querySelector('.vue-container');
+    var overlay = new Overlay(container, 500);
+
+    if (container == null) alert('.vue-container class not found');
+
+    // register vue plugin to server call
+    Vue.use({
+        install: function (vue) {
+
+            var _queue = [];
+            var _running = false;
+
+            // Request new server call
+            vue.prototype.$server = function $server(name, params, vm) {
+                _queue.push({ name: name, params: params, vm: vm });
+                if (!_running) nextQueue(vm.$el);
+            }
+
+            // Execute queue
+            function nextQueue(el) {
+
+                if (_running === false) {
+                    overlay.show();
+                    _running = true;
+                }
+
+                // get first request from queue
+                var request = _queue.shift();
+
+                setTimeout(function () {
+
+                    ajax(request, function () {
+
+                        if (_queue.length === 0) {
+                            overlay.hide();
+                            _running = false;
+                        }
+                        else {
+                            nextQueue();
+                        }
+                    });
+
+                }, 1);
+            }
+
+            // Execute ajax POST request for update model
+            function ajax(options, finish) {
+
+                var xhr = new XMLHttpRequest();
+
+                xhr.onload = function () {
+                    if (xhr.status < 200 || xhr.status >= 400) {
+                        _queue = [];
+                        _running = false;
+                        overlay.hide();
+                        options.vm.$el.innerHTML = xhr.responseText;
+                        return;
+                    }
+
+                    var response = JSON.parse(xhr.responseText);
+                    var update = response['update'];
+                    var js = response['js'];
+
+                    Object.keys(update).forEach(function (key) {
+                        var value = update[key];
+                        console.log('  $data["' + key + '"] = ', value);
+                        options.vm.$data[key] = value;
+                    });
+
+                    if (js) {
+                        console.log('  Eval = ', response['js']);
+                        eval(js);
+                    }
+
+                    finish();
+                };
+
+                // create form with all data
+                var form = new FormData();
+
+                form.append('_method', options.name);
+                form.append('_params', JSON.stringify(options.params));
+                form.append('_model', JSON.stringify(options.vm.$data));
+
+                console.log('Execute ("' + options.name + '") = ', options.params);
+
+                xhr.open('POST', location.href, true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.send(form);
+            }
+        }
+    });
+
+    // capture any link click to use "navToPage" method
+    document.addEventListener('click', function (e) {
+
+        if (e.target && e.target.tagName === 'A') {
+            var href = e.target.href;
+            if (href.startsWith('http')) {
+                e.stopPropagation();
+                e.preventDefault();
+                navToPage(e.target.href);
+                return false;
+            }
+        }
+
+    });
+
+    // navigate to page
+    window.navToPage = function (href) {
+        
+        var url = resolveUrl(href);
+        var hash = /#.*$/.test(url) ? url.match(/#.*$/)[0] : '';
+        url = url.replace(/#.*$/, '');
+
+        console.log('Navigate to page: ' + url);
+
+        // check if page already exists in container (get from url)
+        var current = document.querySelector('.vue-page-active');
+        var page = document.querySelector('.vue-page[data-url="' + url + '"]');
+
+        // if navToPage came from Back button, do not push state
+        if (location.href != url) {
+            history.pushState(null, null, url);
+        }
+
+        if (/^#restore$/i.test(hash)) {
+            // if restoring and page are in stack in container, just toggle
+            if (page != null) {
+                current.classList.remove('vue-page-active');
+                page.classList.add('vue-page-active');
+                autofocus(page);
+                return;
+            }
+        }
+        else {
+            // if pages already exists, remove/destroy first
+            if (page != null) {
+                page.__vue__.$destroy();
+                container.removeChild(page);
+                page = null;
+            }
+        }
+
+        // create new page
+        page = document.createElement('div');
+        page.classList.add('vue-page');
+        page.setAttribute('data-url', url);
+        container.appendChild(page);
+
+        var xhr = new XMLHttpRequest();
+
+        xhr.onload = function () {
+
+            overlay.hide();
+
+            if (xhr.status < 200 || xhr.status >= 400) {
+                current.innerHTML = xhr.responseText;
+                return;
+            }
+
+            // toggle active page
+            current.classList.remove('vue-page-active');
+            page.classList.add('vue-page-active');
+
+            var response = xhr.responseText;
+            var scripts = /<script\b[^>]*>([\s\S]*?)<\/script>/gm.exec(response);
+            var html = response.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/g, '');
+
+            // set new page content
+            page.innerHTML = html;
+
+            // evaluate new vue instance
+            setTimeout(function () {
+                eval(scripts[1]);
+                autofocus(page);
+            });
+        };
+
+        overlay.show();
+
+        xhr.open('GET', url, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.send();
+    }
+
+    // back to page
+    window.addEventListener('popstate', function (e) {
+        navToPage(location.href + '#restore');
+    });
+
+    // show/hide overlay
+    function Overlay(container, delay) {
+        var _state = 'hide';
+        var _panel = null;
+
+        this.show = function () {
+            if (_state !== 'hide') return;
+
+            _state = 'waiting';
+
+            setTimeout(function () {
+                if (_state !== 'waiting') return;
+                _panel = document.createElement('div');
+                _panel.className = 'vue-overlay';
+                container.appendChild(_panel);
+                _state = 'show';
+            }, delay);
+        }
+
+        this.hide = function () {
+            if (_state !== 'show') return _state = 'hide';
+            container.removeChild(_panel);
+            _panel = null;
+            _state = 'hide';
+        }
+    }
+
+    // execute autofocus
+    function autofocus(el) {
+        setTimeout(function () {
+            var focus = el.querySelector('[autofocus]');
+            if (focus == null) return;
+            try { focus.focus(); } catch (e) { }
+        });
+    }
+
+    // default enter directive "v-default-enter"
+    Vue.directive('default-enter', function (el, binding) {
+        if (binding.value === false) {
+            el.classList.remove('vue-default-enter')
+        }
+        else {
+            el.classList.add('vue-default-enter');
+        }
+    });
+
+    // capture default enter
+    document.body.addEventListener('keyup', function (e) {
+
+        if (e.which !== 13) return;
+
+        var page = document.querySelector('.vue-page-active');
+        var el = page.querySelector('.vue-default-enter');
+        var target = e.target || { tagName: '', type: '' };
+
+        // if focus control is a button, trigger current control button
+        if (target.tagName == 'INPUT' && (target.type === 'button' || target.type === 'submit' || target.type === 'image')) return;
+        if (target.tagName == 'A' || target.tagName == 'BUTTON') return;
+
+        if (el != null && el.disabled == false) {
+            e.preventDefault();
+            e.stopPropagation();
+            el.click();
+            return false;
+        }
+    });
+
+    // stop submit ASP.NET form
+    document.querySelector('form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+
+    // get full path from href
+    function resolveUrl(href) {
+        var a = document.createElement('a');
+        a.href = href;
+        return a.href;
+    }
+
+})();
