@@ -14,7 +14,9 @@ public class PageViewModel : Vue.ViewModel<PageViewModel>
         Message = AuthServie.Login(Username, Password);
     }
 }
+```
 
+```HTML
 <vue:App runat="server" id="vm">
     Username: <input type="text" v-model="Username" /><br/>
     Password: <input type="password" v-model="Password" /><br/>
@@ -24,8 +26,9 @@ public class PageViewModel : Vue.ViewModel<PageViewModel>
 </vue:App>
 ```
 
-- Supports C# lambda expression to convert to computed javascript field
-- Supports history navigation
+- Support Vue `Watch` server-side
+- Support Lambda expression to convert to `Computed` javascript 
+- Supports history navigation (ajax page load)
 
 
 
