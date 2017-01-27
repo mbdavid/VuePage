@@ -1,14 +1,16 @@
 ﻿(function () {
 
     var container = document.querySelector('.vue-container');
-    var overlay = new Overlay(container, 500);
-    var maxHistory = 5;
-    var defaultTransition = 'slide-left';
-    var backTransition = 'slide-right';
+
+    if (container == null) alert('.vue-container class not found');
+
+    var options = JSON.stringify(container.getAttribute('data-options') || '{}');
+
+    var overlay = new Overlay(container, options.delay);
+
     var transitionDelay = 1000;
     var transitionEnd = whichTransitionEnd();
 
-    if (container == null) alert('.vue-container class not found');
 
     // register vue plugin to server call
     Vue.use({
@@ -124,7 +126,7 @@
             if (href.startsWith('http') && !e.target.target) {
                 e.stopPropagation();
                 e.preventDefault();
-                navToPage(e.target.href, e.target.getAttribute('data-transition') || defaultTransition);
+                navToPage(e.target.href, e.target.getAttribute('data-transition') || options.defaultTransition);
                 return false;
             }
         }
@@ -170,7 +172,7 @@
         // avoid too many pages in memory
         var pages = container.querySelectorAll('.vue-page');
 
-        if (pages.length > maxHistory) {
+        if (pages.length > options.history) {
             container.removeChild(pages[0]);
         }
 
@@ -236,7 +238,7 @@
 
     // back to page
     window.addEventListener('popstate', function (e) {
-        navToPage(location.href + '#restore', backTransition);
+        navToPage(location.href + '#restore', options.backTransition);
     });
 
     // show/hide overlay

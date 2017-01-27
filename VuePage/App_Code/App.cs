@@ -19,10 +19,6 @@ namespace Vue
 
         #region Properties
 
-        private bool IsAjax { get { return Page.Request.Headers["X-Requested-With"] == "XMLHttpRequest"; } }
-
-        private bool IsPost { get { return Page.Request.HttpMethod == "POST"; } }
-
         /// <summary>
         /// CSS class for vue-container div
         /// </summary>
@@ -32,6 +28,31 @@ namespace Vue
         /// CSS class for inner vue-page div
         /// </summary>
         public string CssClassPage { get; set; }
+
+        /// <summary>
+        /// Wait N ms before vm.$loading(el, container, endFunction) 
+        /// </summary>
+        public int Delay { get; set; } = 400;
+
+        /// <summary>
+        /// Show overlay when ajax
+        /// </summary>
+        public bool ShowOverlay { get; set; } = true;
+
+        /// <summary>
+        /// Define default transition between pages
+        /// </summary>
+        public string DefaultTransition { get; set; }
+
+        /// <summary>
+        /// Define back transition when users call back browser button
+        /// </summary>
+        public string BackTransition { get; set; }
+
+        /// <summary>
+        /// Keep, in browser, history viewmodel to preserve restore
+        /// </summary>
+        public int History { get; set; } = 3;
 
         #endregion
 
@@ -76,7 +97,7 @@ namespace Vue
         {
             _vm = vm;
 
-            if (!IsPost)
+            if (Page.Request.HttpMethod == "GET")
             {
                 _vm.Initialize();
             }
@@ -88,8 +109,11 @@ namespace Vue
 
         protected override void Render(HtmlTextWriter writer)
         {
+            var isAjax = Page.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+            var isPost = Page.Request.HttpMethod == "POST";
+
             // ajax GET request
-            if (IsAjax && !IsPost)
+            if (isAjax && !isPost)
             {
                 var sb = new StringBuilder();
 
@@ -109,7 +133,7 @@ namespace Vue
             }
 
             // ajax POST UpdateModel
-            else if(IsAjax && IsPost)
+            else if(isAjax && isPost)
             {
                 var model = Page.Request.Form["_model"];
                 var method = Page.Request.Form["_method"];
@@ -126,7 +150,9 @@ namespace Vue
             // simple GET/POST request (render template + script)
             else
             {
-                writer.WriteLine("<div class=\"vue-container {0}\">", CssClassContainer);
+                var options = new { history = History, delay = Delay, showOverlay = ShowOverlay, defaultTransition = DefaultTransition, backTransition = BackTransition };
+
+                writer.WriteLine("<div class=\"vue-container {0}\" data-options='{1}'>", CssClassContainer, JsonConvert.SerializeObject(options));
                 writer.WriteLine("<div class=\"vue-page vue-page-active {0}\" data-url=\"{1}\">", CssClassPage, Page.Request.Url.AbsoluteUri);
                 base.Render(writer);
                 writer.WriteLine("</div>");
