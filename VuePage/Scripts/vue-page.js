@@ -2,6 +2,11 @@
 
     var container = document.querySelector('.vue-container');
     var overlay = new Overlay(container, 500);
+    var maxHistory = 5;
+    var defaultTransition = 'slide-left';
+    var backTransition = 'slide-right';
+    var transitionDelay = 1000;
+    var transitionEnd = whichTransitionEnd();
 
     if (container == null) alert('.vue-container class not found');
 
@@ -94,14 +99,15 @@
     });
 
     // capture any link click to use "navToPage" method
+    // do not capture if link contains "target" attribute or is not href page
     document.addEventListener('click', function (e) {
 
         if (e.target && e.target.tagName === 'A') {
             var href = e.target.href;
-            if (href.startsWith('http')) {
+            if (href.startsWith('http') && !e.target.target) {
                 e.stopPropagation();
                 e.preventDefault();
-                navToPage(e.target.href);
+                navToPage(e.target.href, e.target.getAttribute('data-transition') || defaultTransition);
                 return false;
             }
         }
@@ -109,7 +115,7 @@
     });
 
     // navigate to page
-    window.navToPage = function (href) {
+    window.navToPage = function (href, transition) {
         
         var url = resolveUrl(href);
         var hash = /#.*$/.test(url) ? url.match(/#.*$/)[0] : '';
@@ -131,7 +137,7 @@
             if (page != null) {
                 current.classList.remove('vue-page-active');
                 page.classList.add('vue-page-active');
-                autofocus(page);
+                doTransition(transition, current, page, autofocus)
                 return;
             }
         }
@@ -142,6 +148,13 @@
                 container.removeChild(page);
                 page = null;
             }
+        }
+
+        // avoid too many pages in memory
+        var pages = container.querySelectorAll('.vue-page');
+
+        if (pages.length > maxHistory) {
+            container.removeChild(pages[0]);
         }
 
         // create new page
@@ -161,10 +174,6 @@
                 return;
             }
 
-            // toggle active page
-            current.classList.remove('vue-page-active');
-            page.classList.add('vue-page-active');
-
             var response = xhr.responseText;
             var scripts = /<script\b[^>]*>([\s\S]*?)<\/script>/gm.exec(response);
             var html = response.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/g, '');
@@ -172,11 +181,17 @@
             // set new page content
             page.innerHTML = html;
 
+            // toggle active page
+            current.classList.remove('vue-page-active');
+            page.classList.add('vue-page-active');
+
             // evaluate new vue instance
             setTimeout(function () {
                 eval(scripts[1]);
-                autofocus(page);
             });
+
+            doTransition(transition, current, page, autofocus);
+
         };
 
         overlay.show();
@@ -186,9 +201,25 @@
         xhr.send();
     }
 
+    // implement page navigation transition
+    function doTransition(transition, current, page, onEnd) {
+
+        if (!transition) return onEnd();
+
+        current.classList.add(transition + '-out');
+        page.classList.add(transition + '-in');
+
+        setTimeout(function() {
+            current.classList.remove(transition + '-out');
+            page.classList.remove(transition + '-in');
+            document.querySelector('.vue-page-active').classList.remove(transition + '-in');
+            onEnd();
+        }, transitionDelay);
+    }
+
     // back to page
     window.addEventListener('popstate', function (e) {
-        navToPage(location.href + '#restore');
+        navToPage(location.href + '#restore', backTransition);
     });
 
     // show/hide overlay
@@ -219,12 +250,12 @@
     }
 
     // execute autofocus
-    function autofocus(el) {
+    function autofocus() {
         setTimeout(function () {
-            var focus = el.querySelector('[autofocus]');
+            var focus = document.querySelector('.vue-page-active [autofocus]');
             if (focus == null) return;
             try { focus.focus(); } catch (e) { }
-        });
+        }, 1);
     }
 
     // default enter directive "v-default-enter"
@@ -238,7 +269,7 @@
     });
 
     // capture default enter
-    document.body.addEventListener('keyup', function (e) {
+    document.body.addEventListener('keydown', function (e) {
 
         if (e.which !== 13) return;
 
@@ -270,6 +301,24 @@
         var a = document.createElement('a');
         a.href = href;
         return a.href;
+    }
+
+    // get transactionEnd name
+    function whichTransitionEnd() {
+
+        var el = document.createElement('fakeelement');
+        var transitions = {
+            'transition': 'transitionend',
+            'OTransition': 'oTransitionEnd',
+            'MozTransition': 'transitionend',
+            'WebkitTransition': 'webkitTransitionEnd'
+        };
+
+        for (var t in transitions) {
+            if (el.style[t] !== undefined) {
+                return transitions[t];
+            }
+        }
     }
 
 })();

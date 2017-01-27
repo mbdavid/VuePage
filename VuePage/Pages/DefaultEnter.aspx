@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Page 1" Language="C#" %>
+﻿<%@ Page Title="Default Enter" Language="C#" %>
 <script runat="server">
 
     public class VM : Vue.ViewModel<VM>
@@ -13,7 +13,7 @@
     <input type="button" value="B1" @click="Clicked='B1'" />
     <br />
 
-    <input type="text" />
+    <input type="text" autofocus />
     <input type="button" value="B2" @click="Clicked='B2'" />
     <br />
 

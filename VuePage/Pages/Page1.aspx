@@ -22,6 +22,7 @@
         public void Add()
         {
             Items.Add(new Todo { Text = CurrentText, Done = false });
+            CurrentText = "";
         }
 
         public void Remove(int index)
@@ -44,16 +45,18 @@
 </script>
 <asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
 
+    <a href="Page2.aspx" data-transition="slide-left">Page2 >></a><hr />
+
     <h2>Page 1</h2>
     <hr />
 
-    <input type="text" v-model="CurrentText" autofocus />
-    <button v-on:click="Add()" :disabled="!CurrentText" type="button">Add</button>
+    <input type="text" v-model="CurrentText" autofocus id="txt" />
+    <button v-on:click="Add()" :disabled="!CurrentText" type="button" v-default-enter>Add</button>
     <hr />
     <ul>
         <li v-for="(Item, i) in Items">
             <input type="checkbox" v-model="Item.Done" />
-            <span :style="{ 'text-decoration': Item.Done ? 'line-through' : 'none' }">
+            <span :style="{ 'text-decoration': Item.Done ? 'line-through' : 'none' }" @click="Item.Done = !Item.Done">
                 {{ Item.Text }}
             </span>
             <button v-on:click.prevent="Remove(i)" :disabled="Item.Done" type="submit">X</button>

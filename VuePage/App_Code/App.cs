@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Principal;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -19,6 +21,16 @@ namespace Vue
 
         private bool IsPost { get { return Page.Request.HttpMethod == "POST"; } }
 
+        /// <summary>
+        /// CSS class for vue-container div
+        /// </summary>
+        public string CssClassContainer { get; set; }
+
+        /// <summary>
+        /// CSS class for inner vue-page div
+        /// </summary>
+        public string CssClassPage { get; set; }
+
         public App()
         {
             //PreRender += (s, e) =>
@@ -31,6 +43,28 @@ namespace Vue
         public void Mount<T>() where T : IViewModel, new()
         {
             Mount(new T());
+        }
+
+        public void Mount(Type type)
+        {
+            var ctor = type.GetConstructors().First();
+            var parameters = new List<object>();
+
+            // commom ctor parameters
+            foreach(var par in ctor.GetParameters())
+            {
+                if (par.ParameterType == typeof(HttpContext)) parameters.Add(Context);
+                else if (par.ParameterType == typeof(HttpRequest)) parameters.Add(Context.Request);
+                else if (par.ParameterType == typeof(HttpResponse)) parameters.Add(Context.Response);
+                else if (par.ParameterType == typeof(NameValueCollection)) parameters.Add(Context.Request.Params);
+                else if (typeof(IPrincipal).IsAssignableFrom(par.ParameterType)) parameters.Add(Context.User);
+                else throw new SystemException("ViewModel contains unknow ctor paramter: " + par.Name);
+            }
+
+
+            var vm = (IViewModel)Activator.CreateInstance(type, parameters.ToArray());
+
+            Mount(vm);
         }
 
         public void Mount(IViewModel vm)
@@ -82,8 +116,10 @@ namespace Vue
             // simple GET/POST request (render template + script)
             else
             {
-                writer.WriteLine("<div class=\"vue-page vue-page-active\" data-url=\"{0}\">", Page.Request.Url.AbsoluteUri);
+                writer.WriteLine("<div class=\"vue-container {0}\">", CssClassContainer);
+                writer.WriteLine("<div class=\"vue-page vue-page-active {0}\" data-url=\"{1}\">", CssClassPage, Page.Request.Url.AbsoluteUri);
                 base.Render(writer);
+                writer.WriteLine("</div>");
                 writer.WriteLine("</div>");
                 writer.WriteLine("<script>");
                 writer.WriteLine("document.addEventListener('DOMContentLoaded', function() {");
@@ -95,7 +131,7 @@ namespace Vue
 
         private void RenderAjax(string content)
         {
-            Page.Response.Clear();
+            Page.Response.ClearContent();
             Page.Response.ContentType = "text/json";
             Page.Response.Write(content);
             Page.Response.End();

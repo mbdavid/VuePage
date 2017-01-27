@@ -1,0 +1,32 @@
+﻿<%@ Master Language="C#" EnableViewState="false" %>
+<script runat="server">
+
+    public void Page_Load(object sender, EventArgs e)
+    {
+        var viewModelType = Page.GetType().GetNestedTypes().FirstOrDefault(x => typeof(IViewModel).IsAssignableFrom(x));
+
+        vm.Mount((IViewModel)Activator.CreateInstance(viewModelType));
+    }
+
+</script>
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title><%= Page.Title %></title>
+    <link rel="stylesheet" href="/Layout/vue.css" />
+    <link rel="stylesheet" href="mobile.css" />
+</head>
+<body>
+
+    <vue:App runat="server" id="vm">
+        <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
+    </vue:App>
+
+    <script src="/Scripts/vue.js"></script>
+    <script src="/Scripts/vue-page.js?_=<%= new Random().Next(0, 10000) %>"></script>
+</body>
+</html>

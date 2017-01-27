@@ -5,7 +5,7 @@
     {
         var viewModelType = Page.GetType().GetNestedTypes().FirstOrDefault(x => typeof(IViewModel).IsAssignableFrom(x));
 
-        vm.Mount((IViewModel)Activator.CreateInstance(viewModelType));
+        vm.Mount(viewModelType);
 
         var files = System.IO.Directory.GetFiles(Server.MapPath("~/Pages"), "*.aspx");
         rptPages.DataSource = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
@@ -22,19 +22,23 @@
 </head>
 <body>
     <form runat="server">
-        [ <a href="/">Home</a> ] &nbsp;&nbsp;
-        <asp:Repeater runat="server" ID="rptPages">
-            <ItemTemplate>
-                [ <a href="/Pages/<%# Container.DataItem %>.aspx"><%# Container.DataItem  %></a> ] &nbsp;&nbsp;
-            </ItemTemplate>
-        </asp:Repeater>
+        <p>
+            [ <a href="/">Home</a> ] &nbsp;&nbsp;
+            [ <a href="/" target="_self">Home (full)</a> ] &nbsp;&nbsp;
+        </p>
+        <p>
+            Pages: 
+            <asp:Repeater runat="server" ID="rptPages">
+                <ItemTemplate>
+                    [ <a href="/Pages/<%# Container.DataItem %>.aspx"><%# Container.DataItem  %></a> ] &nbsp;&nbsp;
+                </ItemTemplate>
+            </asp:Repeater>
+        </p>
         <h1>Static Master Page</h1>
         <hr />
-        <div class="vue-container">
-            <vue:App runat="server" id="vm">
-                <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
-            </vue:App>
-        </div>
+        <vue:App runat="server" id="vm">
+            <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
+        </vue:App>
     </form>
     <script src="/Scripts/vue.js"></script>
     <script src="/Scripts/vue-page.js?_=<%= new Random().Next(0, 10000) %>"></script>

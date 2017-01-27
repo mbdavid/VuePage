@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" %>
+﻿<%@ Page Title="Default" Language="C#" %>
 <script runat="server">
 
     public class PageViewModel : Vue.ViewModel<PageViewModel>

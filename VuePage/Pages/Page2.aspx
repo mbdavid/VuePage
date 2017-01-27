@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Page 1" Language="C#" %>
+﻿<%@ Page Title="Page 2" Language="C#" %>
 <script runat="server">
 
     public class VM : Vue.ViewModel<VM>
@@ -8,6 +8,8 @@
 
 </script>
 <asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
+
+    <a href="Page1.aspx" data-transition="slide-right"><< Page1</a><hr />
 
     <h2>Page 2</h2>
     <hr />
