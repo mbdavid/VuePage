@@ -17,6 +17,8 @@ namespace Vue
     {
         private IViewModel _vm = null;
 
+        #region Properties
+
         private bool IsAjax { get { return Page.Request.Headers["X-Requested-With"] == "XMLHttpRequest"; } }
 
         private bool IsPost { get { return Page.Request.HttpMethod == "POST"; } }
@@ -31,6 +33,8 @@ namespace Vue
         /// </summary>
         public string CssClassPage { get; set; }
 
+        #endregion
+
         public App()
         {
             //PreRender += (s, e) =>
@@ -39,6 +43,8 @@ namespace Vue
             //    Page.ClientScript.RegisterClientScriptInclude("vue-page", "/Scripts/vue-page.js");
             //};
         }
+
+        #region Mount
 
         public void Mount<T>() where T : IViewModel, new()
         {
@@ -61,7 +67,6 @@ namespace Vue
                 else throw new SystemException("ViewModel contains unknow ctor paramter: " + par.Name);
             }
 
-
             var vm = (IViewModel)Activator.CreateInstance(type, parameters.ToArray());
 
             Mount(vm);
@@ -76,6 +81,10 @@ namespace Vue
                 _vm.Initialize();
             }
         }
+
+        #endregion
+
+        #region Render Rules
 
         protected override void Render(HtmlTextWriter writer)
         {
@@ -105,9 +114,10 @@ namespace Vue
                 var model = Page.Request.Form["_model"];
                 var method = Page.Request.Form["_method"];
                 var parameters = JArray.Parse(Page.Request.Form["_params"]).Select(x => x.Value<object>()).ToArray();
+                var files = Page.Request.Files.GetMultiple("_files");
 
                 // update model, execute server method and return model changes
-                var update = _vm.UpdateModel(model, method, parameters);
+                var update = _vm.UpdateModel(model, method, parameters, files);
 
                 // clear output and write only model updates
                 RenderAjax(update);
@@ -136,5 +146,7 @@ namespace Vue
             Page.Response.Write(content);
             Page.Response.End();
         }
+
+        #endregion
     }
 }

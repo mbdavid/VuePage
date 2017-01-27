@@ -13,6 +13,17 @@
             Files = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
             Show = true;
         }
+
+        protected override void Created()
+        {
+            JS.Code("console.log('THIS (in created())', this);");
+        }
+
+        public void FromServer()
+        {
+            JS.Code("console.log('THIS (in method)', this);");
+
+        }
     }
 
 </script>
@@ -27,5 +38,8 @@
             <a :href="'/Pages/' + file + '.aspx'">{{file}}</a>
         </li>
     </ul>
+
+    <hr />
+    <button @click.prevent="FromServer()">"this" FromServer()</button>
 
 </asp:Content>

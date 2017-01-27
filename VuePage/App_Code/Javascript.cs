@@ -6,6 +6,8 @@ namespace Vue
     {
         private StringBuilder _sb = new StringBuilder();
 
+        public int Length => _sb.Length;
+
         public Javascript ConsoleLog(string text)
         {
             return Code("console.log('{0}');", text);
@@ -18,7 +20,7 @@ namespace Vue
 
         public Javascript Focus(string id)
         {
-            return Clouser("try {{ var f = document.querySelector('.vue-page-active #{0}'); if (f) {{ f.focus(); }} }} catch(e) {{ }}", id);
+            return Code("try {{ var f = document.querySelector('.vue-page-active #{0}'); if (f) {{ f.focus(); }} }} catch(e) {{ }}", id);
         }
 
         public Javascript NavigateTo(string url)
@@ -29,22 +31,6 @@ namespace Vue
         public Javascript RedirectTo(string url)
         {
             return Code("location.href = '{0}';", url);
-        }
-
-        public Javascript Clouser(string code)
-        {
-            _sb.Append("(function(){");
-            _sb.Append(code);
-            _sb.Append("})();");
-            return this;
-        }
-
-        public Javascript Clouser(string format, object args)
-        {
-            _sb.Append("(function(){");
-            _sb.AppendFormat(format, args);
-            _sb.Append("})();");
-            return this;
         }
 
         public Javascript Code(string code)
@@ -61,9 +47,7 @@ namespace Vue
 
         public override string ToString()
         {
-            if(_sb.Length == 0) return "";
-
-            return "(function(){" + _sb.ToString() + "})();";
+            return _sb.ToString();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -91,7 +92,8 @@ namespace Vue
             var writer = new StringBuilder();
             var model = JObject.FromObject(this);
 
-            writer.Append("new Vue({\n");
+            //writer.AppendLine("(function() {");
+            writer.Append("var vm = new Vue({\n");
             writer.Append("  el: '.vue-page-active',\n");
             writer.AppendFormat("  data: {0},\n", JsonConvert.SerializeObject(this, _serializeSettings));
             writer.AppendLine("  methods: { ");
@@ -100,9 +102,22 @@ namespace Vue
 
             foreach (var m in methods)
             {
-                writer.AppendFormat("    '{0}': function(", m.Name);
-                writer.Append(string.Join(", ", m.GetParameters().Select(x => x.Name)));
-                writer.AppendFormat(") {{ this.$server('{0}', [{1}], this); }},\n", m.Name, string.Join(", ", m.GetParameters().Select(x => x.Name)));
+                // get all parameters without HttpPostFile parameters
+                var parameters = m.GetParameters()
+                    .Where(x => x.ParameterType != typeof(HttpPostedFile) && x.ParameterType != typeof(List<HttpPostedFile>))
+                    .Select(x => x.Name);
+
+                // get if any parameter are file(s)
+                var upload = m.GetParameters()
+                    .Where(x => x.ParameterType == typeof(HttpPostedFile) || x.ParameterType == typeof(List<HttpPostedFile>))
+                    .Select(x => x.Name)
+                    .FirstOrDefault() ?? "null";
+
+                writer.AppendFormat("    '{0}': function({1}) {{ this.$server('{0}', [{2}], {3}, this); }},\n", 
+                    m.Name,
+                    string.Join(", ", m.GetParameters().Select(x => x.Name)),
+                    string.Join(", ", parameters),
+                    upload);
             }
 
             writer.Length -= 2;
@@ -133,7 +148,14 @@ namespace Vue
             writer.AppendLine("});");
 
             // add user javascript
-            writer.AppendLine(_js.ToString());
+            if(_js.Length > 0)
+            {
+                writer.AppendLine("(function() {");
+                writer.AppendLine(_js.ToString());
+                writer.AppendLine("}).call(vm)");
+            }
+
+            //writer.AppendLine("})();");
 
             return writer.ToString();
         }
@@ -142,16 +164,16 @@ namespace Vue
 
         #region Update Model
 
-        public virtual string UpdateModel(string model, string method, object[] parameters)
+        public virtual string UpdateModel(string model, string method, object[] parameters, IList<HttpPostedFile> files)
         {
             JsonConvert.PopulateObject(model, this, _serializeSettings);
 
-            ExecuteMethod(method, parameters);
+            ExecuteMethod(method, parameters, files);
 
             return RenderUpdate(model);
         }
 
-        protected virtual void ExecuteMethod(string name, object[] parameters)
+        protected virtual void ExecuteMethod(string name, object[] parameters, IList<HttpPostedFile> files)
         {
             var method = this.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             var pars = new List<object>();
@@ -159,7 +181,18 @@ namespace Vue
 
             foreach (var p in method.GetParameters())
             {
-                pars.Add(Convert.ChangeType(parameters[index++], p.ParameterType));
+                if(p.ParameterType == typeof(HttpPostedFile))
+                {
+                    pars.Add(files.FirstOrDefault());
+                }
+                else if (p.ParameterType == typeof(List<HttpPostedFile>))
+                {
+                    pars.Add(new List<HttpPostedFile>(files));
+                }
+                else
+                {
+                    pars.Add(Convert.ChangeType(parameters[index++], p.ParameterType));
+                }
             }
 
             method.Invoke(this, pars.ToArray());

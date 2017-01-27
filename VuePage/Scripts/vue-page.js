@@ -18,8 +18,8 @@
             var _running = false;
 
             // Request new server call
-            vue.prototype.$server = function $server(name, params, vm) {
-                _queue.push({ name: name, params: params, vm: vm });
+            vue.prototype.$server = function $server(name, params, files, vm) {
+                _queue.push({ name: name, params: params, files: files, vm: vm });
                 if (!_running) nextQueue(vm.$el);
             }
 
@@ -54,6 +54,7 @@
             function ajax(options, finish) {
 
                 var xhr = new XMLHttpRequest();
+                var files = [];
 
                 xhr.onload = function () {
                     if (xhr.status < 200 || xhr.status >= 400) {
@@ -68,6 +69,9 @@
                     var update = response['update'];
                     var js = response['js'];
 
+                    // empty file inputs (if exists)
+                    files.forEach(function (f) { f.value = ''; });
+
                     Object.keys(update).forEach(function (key) {
                         var value = update[key];
                         console.log('  $data["' + key + '"] = ', value);
@@ -76,7 +80,9 @@
 
                     if (js) {
                         console.log('  Eval = ', response['js']);
-                        eval(js);
+                        setTimeout(function () {
+                            new Function(js).call(options.vm);
+                        })
                     }
 
                     finish();
@@ -88,6 +94,17 @@
                 form.append('_method', options.name);
                 form.append('_params', JSON.stringify(options.params));
                 form.append('_model', JSON.stringify(options.vm.$data));
+
+                // select elements with for upload file
+                if (options.files) {
+                    files = options.vm.$el.querySelectorAll(options.files);
+                    files.forEach(function (file) {
+                        for (var i = 0; i < file.files.length; i++) {
+                            form.append('_files', file.files[i]);
+                            console.log('Uploading ("' + file.files[i].name + ')... ' + file.files[i].size);
+                        }
+                    });
+                }
 
                 console.log('Execute ("' + options.name + '") = ', options.params);
 
@@ -187,7 +204,7 @@
 
             // evaluate new vue instance
             setTimeout(function () {
-                eval(scripts[1]);
+                new Function(scripts[1]).call(window);
             });
 
             doTransition(transition, current, page, autofocus);
