@@ -4,13 +4,16 @@
 
     if (container == null) alert('.vue-container class not found');
 
-    var options = JSON.stringify(container.getAttribute('data-options') || '{}');
+    var options = JSON.parse(container.getAttribute('data-options') || '{}');
 
-    var overlay = new Overlay(container, options.delay);
+    var loading = new Loading(options.delay);
 
     var transitionDelay = 1000;
     var transitionEnd = whichTransitionEnd();
 
+    Vue.$loading = function (fn) {
+        loading.register(fn);
+    }
 
     // register vue plugin to server call
     Vue.use({
@@ -22,14 +25,15 @@
             // Request new server call
             vue.prototype.$server = function $server(name, params, files, vm) {
                 _queue.push({ name: name, params: params, files: files, vm: vm });
-                if (!_running) nextQueue(vm.$el);
+                var target = (event ? event.target : null) || null;
+                if (!_running) nextQueue(target, vm.$el);
             }
 
             // Execute queue
-            function nextQueue(el) {
+            function nextQueue(target, el) {
 
                 if (_running === false) {
-                    overlay.show();
+                    loading.start(target, el);
                     _running = true;
                 }
 
@@ -41,11 +45,11 @@
                     ajax(request, function () {
 
                         if (_queue.length === 0) {
-                            overlay.hide();
+                            loading.stop();
                             _running = false;
                         }
                         else {
-                            nextQueue();
+                            nextQueue(target, el);
                         }
                     });
 
@@ -62,7 +66,7 @@
                     if (xhr.status < 200 || xhr.status >= 400) {
                         _queue = [];
                         _running = false;
-                        overlay.hide();
+                        loading.stop();
                         options.vm.$el.innerHTML = xhr.responseText;
                         return;
                     }
@@ -186,7 +190,7 @@
 
         xhr.onload = function () {
 
-            overlay.hide();
+            loading.stop();
 
             if (xhr.status < 200 || xhr.status >= 400) {
                 current.innerHTML = xhr.responseText;
@@ -213,7 +217,7 @@
 
         };
 
-        overlay.show();
+        loading.start(null, page);
 
         xhr.open('GET', url, true);
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -241,30 +245,37 @@
         navToPage(location.href + '#restore', options.backTransition);
     });
 
-    // show/hide overlay
-    function Overlay(container, delay) {
-        var _state = 'hide';
-        var _panel = null;
+    // Loading control
+    function Loading(delay) {
+        var _callbacks = [];
+        var _results = [];
+        var _state = 'stop';
 
-        this.show = function () {
-            if (_state !== 'hide') return;
+        // register a new callback funcion
+        // each function must returns another function to be called when finish timer
+        this.register = function (fn) {
+            _callbacks.push(fn);
+        }
 
+        // start timer before call all callbacks
+        this.start = function (target, el) {
+            if (_state !== 'stop') return;
             _state = 'waiting';
-
             setTimeout(function () {
                 if (_state !== 'waiting') return;
-                _panel = document.createElement('div');
-                _panel.className = 'vue-overlay';
-                container.appendChild(_panel);
-                _state = 'show';
+                _results = [];
+                _callbacks.forEach(function (fn) {
+                    _results.push(fn(target, el));
+                });
+                _state = 'start';
             }, delay);
         }
 
-        this.hide = function () {
-            if (_state !== 'show') return _state = 'hide';
-            container.removeChild(_panel);
-            _panel = null;
-            _state = 'hide';
+        // end timer and call all results
+        this.stop = function () {
+            if (_state !== 'start') return _state = 'stop';
+            _results.forEach(function (fn) { fn(); });
+            _state = 'stop';
         }
     }
 
@@ -308,12 +319,15 @@
         }
     });
 
-    // stop submit ASP.NET form
-    document.querySelector('form').addEventListener('submit', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    });
+    // stop submiting ASP.NET form
+    var form = document.querySelector('form');
+    if (form != null) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+    }
 
     // get full path from href
     function resolveUrl(href) {
