@@ -1,0 +1,22 @@
+﻿.overlay {
+    position: absolute;
+    background-color: rgba(255, 255, 255, .5);
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: +99999;
+}
+.overlay:after {
+    position: relative;
+    left: calc(50% - 35px);
+    top: calc(50% - 30px);
+    content: 'Loading...';
+    color: black;
+    font-weight: bold;
+    font-family: Verdana;
+    font-size: 15px;
+    background-color: rgba(200, 200, 200, .8);
+    padding: 12px 15px;
+    border-radius: 3px;
+}

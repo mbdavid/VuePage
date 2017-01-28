@@ -3,31 +3,19 @@
 
     public class VM : Vue.ViewModel<VM>
     {
-        public int Seconds { get; set; } = 1;
-        public int Counter { get; set; }
-
-        protected override void Created()
+        public void Wait(int s)
         {
-            System.Threading.Thread.Sleep(2000);
-        }
-
-        public void Wait()
-        {
-            Counter++;
-            System.Threading.Thread.Sleep(Seconds * 1000);
+            System.Threading.Thread.Sleep(s * 1000);
         }
     }
 
 </script>
 <asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
 
-    This page took 2 seconds to load first time.<br /><br />
+    <h1>Custom Disabled control in Ajax</h1>
 
-    Counter: {{ Counter }}
-
-    <br /><br />
-
-    <input v-model.number="Seconds" size="3" />
-    <button @click="Wait()">Click and wait {{ Seconds }} seconds</button>
+    <input type="button" @click="Wait(2)" value="Wait(2s)" />
+    <input type="button" @click="Wait(2)" v-overlay value="Wait(2s) [v-overlay]" />
+    <input type="text" @change="Wait(1)" v-overlay placeholder="Wait(1s) [v-overlay]" />
 
 </asp:Content>

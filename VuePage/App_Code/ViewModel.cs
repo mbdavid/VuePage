@@ -19,17 +19,17 @@ namespace Vue
         private Javascript _js = new Javascript();
         private Dictionary<string, string> _computed = new Dictionary<string, string>();
         private Dictionary<string, Action<object, object>> _watch = new Dictionary<string, Action<object, object>>();
-        private JsonSerializerSettings _serializeSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Include };
+        private JsonSerializerSettings _serializeSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Include,
+            ObjectCreationHandling = ObjectCreationHandling.Replace
+        };
 
         protected Javascript JS { get { return _js; } }
-        protected HttpContext Context { get { return HttpContext.Current; } }
 
-        public void Initialize()
-        {
-            Created();
-        }
+        protected bool IsPost { get; } = HttpContext.Current.Request.HttpMethod == "POST";
 
-        protected virtual void Created()
+        public ViewModel()
         {
         }
 

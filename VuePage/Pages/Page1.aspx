@@ -11,10 +11,8 @@
             Computed("First", x => x.Items.Count == 0 ? "[none]" : x.Items[0].Text);
             Computed("FirstSelected", x => x.Items.Where(z => z.Done).Count() == 0 ? "[none]" : x.Items.Where(z => z.Done).First().Text);
             Computed("FirstSel", x => x.Items.First(z => z.Done));
-        }
 
-        protected override void Created()
-        {
+            // Initial values (will be replaced when post)
             Items.Add(new Todo { Text = "My first demo" });
             Items.Add(new Todo { Text = "Was done", Done = true });
         }

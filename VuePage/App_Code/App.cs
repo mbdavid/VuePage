@@ -30,16 +30,6 @@ namespace Vue
         public string CssClassPage { get; set; }
 
         /// <summary>
-        /// Wait N ms before vm.$loading(el, container, endFunction) 
-        /// </summary>
-        public int Delay { get; set; } = 400;
-
-        /// <summary>
-        /// Show overlay when ajax
-        /// </summary>
-        public bool ShowOverlay { get; set; } = true;
-
-        /// <summary>
         /// Define default transition between pages
         /// </summary>
         public string DefaultTransition { get; set; }
@@ -52,7 +42,7 @@ namespace Vue
         /// <summary>
         /// Keep, in browser, history viewmodel to preserve restore
         /// </summary>
-        public int History { get; set; } = 3;
+        public int HistoryLength { get; set; } = 3;
 
         #endregion
 
@@ -85,7 +75,7 @@ namespace Vue
                 else if (par.ParameterType == typeof(HttpResponse)) parameters.Add(Context.Response);
                 else if (par.ParameterType == typeof(NameValueCollection)) parameters.Add(Context.Request.Params);
                 else if (typeof(IPrincipal).IsAssignableFrom(par.ParameterType)) parameters.Add(Context.User);
-                else throw new SystemException("ViewModel contains unknow ctor paramter: " + par.Name);
+                else throw new SystemException("ViewModel contains unknown ctor parameter: " + par.Name);
             }
 
             var vm = (IViewModel)Activator.CreateInstance(type, parameters.ToArray());
@@ -96,11 +86,6 @@ namespace Vue
         public void Mount(IViewModel vm)
         {
             _vm = vm;
-
-            if (Page.Request.HttpMethod == "GET")
-            {
-                _vm.Initialize();
-            }
         }
 
         #endregion
@@ -150,7 +135,7 @@ namespace Vue
             // simple GET/POST request (render template + script)
             else
             {
-                var options = new { history = History, delay = Delay, showOverlay = ShowOverlay, defaultTransition = DefaultTransition, backTransition = BackTransition };
+                var options = new { history = HistoryLength, defaultTransition = DefaultTransition, backTransition = BackTransition };
 
                 writer.WriteLine("<div class=\"vue-container {0}\" data-options='{1}'>", CssClassContainer, JsonConvert.SerializeObject(options));
                 writer.WriteLine("<div class=\"vue-page vue-page-active {0}\" data-url=\"{1}\">", CssClassPage, Page.Request.Url.AbsoluteUri);

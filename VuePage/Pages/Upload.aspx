@@ -3,7 +3,6 @@
 
     public class VM : Vue.ViewModel<VM>
     {
-
         public void UploadSingleFile(string n, HttpPostedFile f)
         {
             JS.Alert("Uploaded [" + n + "] file = " + f?.FileName);

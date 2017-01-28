@@ -6,11 +6,6 @@
         var viewModelType = Page.GetType().GetNestedTypes().FirstOrDefault(x => typeof(IViewModel).IsAssignableFrom(x));
 
         vm.Mount(viewModelType);
-
-        var files = System.IO.Directory.GetFiles(Server.MapPath("~/Pages"), "*.aspx");
-        rptPages.DataSource = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
-        rptPages.DataBind();
-
     }
 
 </script>
@@ -19,28 +14,25 @@
 <head runat="server">
     <title><%= Page.Title %></title>
     <link rel="stylesheet" href="/Layout/vue.css" />
+    <link rel="stylesheet" href="/Layout/transitions.css" />
+    <link rel="stylesheet" href="/Layout/overlay.css" />
 </head>
 <body>
     <form runat="server">
         <p>
-            [ <a href="/">Home</a> ] &nbsp;&nbsp;
+            [ <a href="/" data-transition="slide-right">Home</a> ] &nbsp;&nbsp;
             [ <a href="/" target="_self">Home (full)</a> ] &nbsp;&nbsp;
         </p>
-        <p>
-            Pages: 
-            <asp:Repeater runat="server" ID="rptPages">
-                <ItemTemplate>
-                    [ <a href="/Pages/<%# Container.DataItem %>.aspx"><%# Container.DataItem  %></a> ] &nbsp;&nbsp;
-                </ItemTemplate>
-            </asp:Repeater>
-        </p>
-        <h1>Static Master Page</h1>
+        <h1>Static Master Page <small>(<%= DateTime.Now.ToString("ss") %>)</small></h1>
         <hr />
-        <vue:App runat="server" id="vm">
+        <vue:App runat="server" id="vm" HistoryLength="1" DefaultTransition="slide-left" BackTransition="slide-right">
             <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
         </vue:App>
     </form>
     <script src="/Scripts/vue.js"></script>
     <script src="/Scripts/vue-page.js?_=<%= new Random().Next(0, 10000) %>"></script>
+
+    <script src="/Scripts/Components/overlay.js?_=<%= new Random().Next(0, 10000) %>"></script>
+    <script src="/Scripts/Components/defaultenter.js?_=<%= new Random().Next(0, 10000) %>"></script>
 </body>
 </html>

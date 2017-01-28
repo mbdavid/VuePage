@@ -4,25 +4,21 @@
     public class PageViewModel : Vue.ViewModel<PageViewModel>
     {
         public List<string> Files { get; set; }
-        public bool Show { get; set; }
+        public bool Show { get; set; } = true;
 
-        public PageViewModel()
+        public PageViewModel(HttpContext ctx)
         {
-            var files = System.IO.Directory.GetFiles(HttpContext.Current.Server.MapPath("~/Pages"), "*.aspx");
-
-            Files = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
-            Show = true;
-        }
-
-        protected override void Created()
-        {
-            JS.Code("console.log('THIS (in created())', this);");
+            if(!IsPost)
+            {
+                var files = System.IO.Directory.GetFiles(ctx.Server.MapPath("~/Pages"), "*.aspx");
+                this.Files = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
+                //JS.Code("console.log('THIS (in created())', this);");
+            }
         }
 
         public void FromServer()
         {
             JS.Code("console.log('THIS (in method)', this);");
-
         }
     }
 

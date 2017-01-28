@@ -5,17 +5,12 @@
     if (container == null) alert('.vue-container class not found');
 
     var options = JSON.parse(container.getAttribute('data-options') || '{}');
+    var loading = new Loading(container, 0);
 
-    var loading = new Loading(options.delay);
+    // register Vue.$loading function
+    Vue.$loading = loading.register;
 
-    var transitionDelay = 1000;
-    var transitionEnd = whichTransitionEnd();
-
-    Vue.$loading = function (fn) {
-        loading.register(fn);
-    }
-
-    // register vue plugin to server call
+    // register vue plugin to server call (vue.$server)
     Vue.use({
         install: function (vue) {
 
@@ -24,33 +19,31 @@
 
             // Request new server call
             vue.prototype.$server = function $server(name, params, files, vm) {
-                _queue.push({ name: name, params: params, files: files, vm: vm });
                 var target = (event ? event.target : null) || null;
-                if (!_running) nextQueue(target, vm.$el);
+                _queue.push({ target: target, name: name, params: params, files: files, vm: vm });
+                if (!_running) nextQueue();
             }
 
             // Execute queue
-            function nextQueue(target, el) {
+            function nextQueue() {
 
-                if (_running === false) {
-                    loading.start(target, el);
-                    _running = true;
-                }
+                if (_running === false) _running = true;
 
                 // get first request from queue
                 var request = _queue.shift();
+
+                loading.start(request.target);
 
                 setTimeout(function () {
 
                     ajax(request, function () {
 
-                        if (_queue.length === 0) {
-                            loading.stop();
-                            _running = false;
-                        }
-                        else {
-                            nextQueue(target, el);
-                        }
+                        loading.stop();
+
+                        // if no more items in queue, stop running
+                        if (_queue.length === 0) return _running = false;
+
+                        nextQueue();
                     });
 
                 }, 1);
@@ -177,6 +170,7 @@
         var pages = container.querySelectorAll('.vue-page');
 
         if (pages.length > options.history) {
+            pages[0].__vue__.$destroy();
             container.removeChild(pages[0]);
         }
 
@@ -217,7 +211,7 @@
 
         };
 
-        loading.start(null, page);
+        loading.start(null);
 
         xhr.open('GET', url, true);
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -229,15 +223,18 @@
 
         if (!transition) return onEnd();
 
-        current.classList.add(transition + '-out');
-        page.classList.add(transition + '-in');
-
-        setTimeout(function() {
+        var fn = function () {
             current.classList.remove(transition + '-out');
             page.classList.remove(transition + '-in');
             document.querySelector('.vue-page-active').classList.remove(transition + '-in');
             onEnd();
-        }, transitionDelay);
+        }
+
+        current.removeEventListener('animationend', fn);
+        current.addEventListener('animationend', fn);
+
+        current.classList.add(transition + '-out');
+        page.classList.add(transition + '-in');
     }
 
     // back to page
@@ -245,37 +242,36 @@
         navToPage(location.href + '#restore', options.backTransition);
     });
 
-    // Loading control
-    function Loading(delay) {
-        var _callbacks = [];
-        var _results = [];
-        var _state = 'stop';
-
-        // register a new callback funcion
-        // each function must returns another function to be called when finish timer
-        this.register = function (fn) {
-            _callbacks.push(fn);
+    // Loading state machine (with delay)
+    function Loading(container) {
+        var _handles = [];
+        // register new handle loading
+        this.register = function (delay, start) {
+            var handle = { delay: delay, start: start, state: 'stop', stop: null };
+            _handles.push(handle);
+            return function () {
+                _handles.splice(_handles.indexOf(handle), 1);
+            }
         }
-
-        // start timer before call all callbacks
-        this.start = function (target, el) {
-            if (_state !== 'stop') return;
-            _state = 'waiting';
-            setTimeout(function () {
-                if (_state !== 'waiting') return;
-                _results = [];
-                _callbacks.forEach(function (fn) {
-                    _results.push(fn(target, el));
-                });
-                _state = 'start';
-            }, delay);
+        // start timer
+        this.start = function (target) {
+            _handles.forEach(function (handle) {
+                if (handle.state !== 'stop') return;
+                handle.state = 'waiting';
+                setTimeout(function () {
+                    if (handle.state !== 'waiting') return;
+                    handle.stop = handle.start(target, container);
+                    handle.state = 'start';
+                }, handle.delay);
+            });
         }
-
-        // end timer and call all results
+        // stop timer
         this.stop = function () {
-            if (_state !== 'start') return _state = 'stop';
-            _results.forEach(function (fn) { fn(); });
-            _state = 'stop';
+            _handles.forEach(function (handle) {
+                if (handle.state !== 'start') return handle.state = 'stop';
+                handle.stop();
+                handle.state = 'stop';
+            });
         }
     }
 
@@ -288,70 +284,11 @@
         }, 1);
     }
 
-    // default enter directive "v-default-enter"
-    Vue.directive('default-enter', function (el, binding) {
-        if (binding.value === false) {
-            el.classList.remove('vue-default-enter')
-        }
-        else {
-            el.classList.add('vue-default-enter');
-        }
-    });
-
-    // capture default enter
-    document.body.addEventListener('keydown', function (e) {
-
-        if (e.which !== 13) return;
-
-        var page = document.querySelector('.vue-page-active');
-        var el = page.querySelector('.vue-default-enter');
-        var target = e.target || { tagName: '', type: '' };
-
-        // if focus control is a button, trigger current control button
-        if (target.tagName == 'INPUT' && (target.type === 'button' || target.type === 'submit' || target.type === 'image')) return;
-        if (target.tagName == 'A' || target.tagName == 'BUTTON') return;
-
-        if (el != null && el.disabled == false) {
-            e.preventDefault();
-            e.stopPropagation();
-            el.click();
-            return false;
-        }
-    });
-
-    // stop submiting ASP.NET form
-    var form = document.querySelector('form');
-    if (form != null) {
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-    }
-
     // get full path from href
     function resolveUrl(href) {
         var a = document.createElement('a');
         a.href = href;
         return a.href;
-    }
-
-    // get transactionEnd name
-    function whichTransitionEnd() {
-
-        var el = document.createElement('fakeelement');
-        var transitions = {
-            'transition': 'transitionend',
-            'OTransition': 'oTransitionEnd',
-            'MozTransition': 'transitionend',
-            'WebkitTransition': 'webkitTransitionEnd'
-        };
-
-        for (var t in transitions) {
-            if (el.style[t] !== undefined) {
-                return transitions[t];
-            }
-        }
     }
 
 })();
