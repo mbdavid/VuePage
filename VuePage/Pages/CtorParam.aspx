@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Page 1" Language="C#" %>
+﻿<%@ Page Title="CtorParam" Language="C#" %>
 <script runat="server">
 
     public class VM : Vue.ViewModel<VM>

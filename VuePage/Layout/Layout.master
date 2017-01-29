@@ -25,7 +25,7 @@
         </p>
         <h1>Static Master Page <small>(<%= DateTime.Now.ToString("ss") %>)</small></h1>
         <hr />
-        <vue:App runat="server" id="vm" HistoryLength="1" DefaultTransition="slide-left" BackTransition="slide-right">
+        <vue:App runat="server" id="vm" HistoryLength="5" DefaultTransition="slide-left" BackTransition="slide-right">
             <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
         </vue:App>
     </form>

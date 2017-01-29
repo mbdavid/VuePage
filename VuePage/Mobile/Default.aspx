@@ -9,14 +9,20 @@
 <asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
 
     <div class="m-header">
-        toolbar
+        Pagina 1: 
+        <button class="button is-primary">Enviar</button>
+        <a href="#" class="button is-danger">Enviar</a>
     </div>
 
     <div class="m-content">
-        toolbar
+
+        content: <a href="Page1.aspx">Page 1</a>
+        1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />
+        1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />
+        1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />
+        1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />
+        content: <a href="Page1.aspx">Page 1</a>
     </div>
-    <div class="m-toolbar">
-        toolbar
-    </div>
+
 
 </asp:Content>

@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Page 2" Language="C#" %>
+﻿<%@ Page Title="Upload" Language="C#" %>
 <script runat="server">
 
     public class VM : Vue.ViewModel<VM>

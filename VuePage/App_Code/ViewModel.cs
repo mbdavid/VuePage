@@ -92,7 +92,6 @@ namespace Vue
             var writer = new StringBuilder();
             var model = JObject.FromObject(this);
 
-            //writer.AppendLine("(function() {");
             writer.Append("var vm = new Vue({\n");
             writer.Append("  el: '.vue-page-active',\n");
             writer.AppendFormat("  data: {0},\n", JsonConvert.SerializeObject(this, _serializeSettings));
@@ -154,8 +153,6 @@ namespace Vue
                 writer.AppendLine(_js.ToString());
                 writer.AppendLine("}).call(vm)");
             }
-
-            //writer.AppendLine("})();");
 
             return writer.ToString();
         }

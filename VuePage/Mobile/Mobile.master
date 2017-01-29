@@ -16,17 +16,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#9999ff" />
     <title><%= Page.Title %></title>
-    <link rel="stylesheet" href="/Layout/vue.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.3.1/css/bulma.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
     <link rel="stylesheet" href="mobile.css" />
+    <link rel="stylesheet" href="../Layout/transitions.css" />
 </head>
 <body>
 
-    <vue:App runat="server" id="vm">
+    <div class="statusbar"></div>
+
+    <vue:App runat="server" id="vm" DefaultTransition="slide-left">
         <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
     </vue:App>
 
     <script src="/Scripts/vue.js"></script>
     <script src="/Scripts/vue-page.js?_=<%= new Random().Next(0, 10000) %>"></script>
+    <script>
+        window.addEventListener("load", function () { window.scrollTo(0, 0); });
+    </script>
 </body>
 </html>

@@ -3,6 +3,7 @@
     height: 100%;
     width: 100%;
     overflow: hidden;
+    color: red;
 }
 body {
     font-family: Roboto, Noto, Helvetica, Arial, sans-serif;
@@ -17,6 +18,18 @@ body {
     overflow: hidden;
 }
 
+.statusbar {
+    background: red;
+    width:100%;
+    position: fixed;
+    top:0;
+    opacity: 0.95;
+    z-index: 1030;
+}
+
+.navbar {margin-top: 15pt;}
+
+
 * {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
     -webkit-touch-callout:none;
@@ -25,10 +38,39 @@ a, input, textarea, select {
     outline: 0;
 }
 
-a {
-    text-decoration: none;
-    color: blue;
+.vue-container {
+    height: 100%;
+    width: 100%; 
+    overflow-y: scroll; 
+    -webkit-overflow-scrolling: touch;
 }
-p {
-    margin: 1em 0;
+
+.vue-page {
+    display: none;
+    height: 100%;
+}
+
+.vue-page-active {
+    display: flex;
+    flex-direction: column;
+    width: 100%; 
+    height: 100%; 
+
+}
+
+.m-header {
+    background-color: #9999ff;
+    flex: 0 0 60px; 
+}
+
+.m-content {
+    background-color: yellow;
+    width: 100%; 
+    flex: 1; 
+    overflow-y: scroll; 
+    -webkit-overflow-scrolling: touch;
+}
+
+.m-toolbar {
+    background-color: green;
 }

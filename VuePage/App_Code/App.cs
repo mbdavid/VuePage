@@ -111,7 +111,10 @@ namespace Vue
                 }
 
                 sb.AppendLine("<script>");
+                sb.AppendLine("(function() {");
+                sb.AppendLine("document.title = '" + Page.Title + "';");
                 sb.AppendLine(_vm.RenderScript());
+                sb.AppendLine("})();");
                 sb.AppendLine("</script>");
 
                 RenderAjax(sb.ToString());
