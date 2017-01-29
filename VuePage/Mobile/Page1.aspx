@@ -10,6 +10,8 @@
 
     <p>Page 1</p>
     <hr />
-    <a href="Default.aspx" data-transition="slide-right">Home</a>
+    <div style="text-align: center">
+        <a class="button is-primary" href="Default.aspx#restore" data-transition="slide-right">Home</a>
+    </div>
 
 </asp:Content>

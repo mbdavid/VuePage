@@ -32,7 +32,8 @@
     <script src="/Scripts/vue.js"></script>
     <script src="/Scripts/vue-page.js?_=<%= new Random().Next(0, 10000) %>"></script>
 
-    <script src="/Scripts/Components/overlay.js?_=<%= new Random().Next(0, 10000) %>"></script>
     <script src="/Scripts/Components/defaultenter.js?_=<%= new Random().Next(0, 10000) %>"></script>
+    <script src="/Scripts/Components/inputdate.js?_=<%= new Random().Next(0, 10000) %>"></script>
+    <script src="/Scripts/Components/overlay.js?_=<%= new Random().Next(0, 10000) %>"></script>
 </body>
 </html>

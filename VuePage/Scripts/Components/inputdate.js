@@ -1,6 +1,6 @@
 ﻿Vue.component('input-date', {
-    template: '<span><input type="text" v-model="text" @change="update()" /> [local={{local}}|invalid={{invalid}}]</span>',
-    props: ["value"],
+    template: '<span><input type="text" v-model="text" @change="update()" :placeholder="placeholder" /> [local={{local}}|invalid={{invalid}}]</span>',
+    props: ["value", "placeholder"],
     data: function () {
         return {
             text: this.parse(this.value),
@@ -41,4 +41,11 @@
         }
     }
 
+})
+
+Vue.filter('date', function (value, input) {
+    var arr = /(\d{4})-(\d{2})-(\d{2})/.exec(value || "");
+    return arr ?
+        (arr[3] + '/' + arr[2] + '/' + arr[1]) :
+        "";
 })

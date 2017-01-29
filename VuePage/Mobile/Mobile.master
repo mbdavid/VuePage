@@ -33,8 +33,9 @@
 
     <script src="/Scripts/vue.js"></script>
     <script src="/Scripts/vue-page.js?_=<%= new Random().Next(0, 10000) %>"></script>
+    <script src="fastclick.js"></script>
     <script>
-        window.addEventListener("load", function () { window.scrollTo(0, 0); });
+        FastClick.attach(document.body)
     </script>
 </body>
 </html>
