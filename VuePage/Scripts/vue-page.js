@@ -1,11 +1,15 @@
 ﻿(function () {
 
-    var container = document.querySelector('.vue-container');
+    var page = document.querySelector('.vue-page');
 
-    if (container == null) alert('.vue-container class not found');
+    // if not found first page is missing <vue:App>
+    if (page == null) return;
 
-    var options = JSON.parse(container.getAttribute('data-options') || '{}');
-    var loading = new Loading(container, 0);
+    var options = JSON.parse(page.getAttribute('data-options') || '{}');
+    var loading = new Loading(0);
+
+    // remove options
+    page.removeAttribute('data-options');
 
     // register Vue.$loading function
     Vue.$loading = loading.register;
@@ -139,8 +143,8 @@
 
         console.log('Navigate to page: ' + url);
 
-        // check if page already exists in container (get from url)
-        var current = document.querySelector('.vue-page-active');
+        // check if page already exists in body (get from url)
+        var active = document.querySelector('.vue-page-active');
         var page = document.querySelector('.vue-page[data-url="' + url + '"]');
 
         // if navToPage came from Back button, do not push state
@@ -149,36 +153,42 @@
         }
 
         if (/^#restore$/i.test(hash)) {
-            // if restoring and page are in stack in container, just toggle
+            // if restoring and page are in html, just toggle
             if (page != null) {
-                current.classList.remove('vue-page-active');
+                // toogle class
+                active.classList.remove('vue-page-active');
                 page.classList.add('vue-page-active');
-                doTransition(transition, current, page, autofocus)
-                return;
+
+                // toogle display
+                active.style.display = 'none';
+                page.style.removeProperty('display');
+
+                // do transition
+                return doTransition(transition, active, page, autofocus);
             }
         }
         else {
             // if pages already exists, remove/destroy first
             if (page != null) {
                 page.__vue__.$destroy();
-                container.removeChild(page);
+                page.parentNode.removeChild(page);
                 page = null;
             }
         }
 
         // avoid too many pages in memory
-        var pages = container.querySelectorAll('.vue-page');
+        var pages = document.querySelectorAll('.vue-page');
 
         if (pages.length > options.history) {
-            pages[0].__vue__.$destroy();
-            container.removeChild(pages[0]);
+            var first = pages[0];
+            first.__vue__.$destroy();
+            first.parentNode.removeChild(first);
         }
 
         // create new page
         page = document.createElement('div');
         page.classList.add('vue-page');
         page.setAttribute('data-url', url);
-        container.appendChild(page);
 
         var xhr = new XMLHttpRequest();
 
@@ -187,7 +197,7 @@
             loading.stop();
 
             if (xhr.status < 200 || xhr.status >= 400) {
-                current.innerHTML = xhr.responseText;
+                active.innerHTML = xhr.responseText;
                 return;
             }
 
@@ -198,16 +208,22 @@
             // set new page content
             page.innerHTML = html;
 
-            // toggle active page
-            current.classList.remove('vue-page-active');
+            // toggle class
+            active.classList.remove('vue-page-active');
             page.classList.add('vue-page-active');
+
+            // toggle display
+            active.style.display = 'none';
+
+            // insert new page after active page
+            active.parentNode.insertBefore(page, active.nextSibling);
 
             // evaluate new vue instance
             setTimeout(function () {
                 new Function(scripts[1]).call(window);
             });
 
-            doTransition(transition, current, page, autofocus);
+            doTransition(transition, active, page, autofocus);
 
         };
 
@@ -219,21 +235,25 @@
     }
 
     // implement page navigation transition
-    function doTransition(transition, current, page, onEnd) {
+    function doTransition(transition, active, page, onEnd) {
 
         if (!transition) return onEnd();
 
+        console.log('doTransition: ', transition)
+
         var fn = function () {
-            current.classList.remove(transition + '-out');
-            page.classList.remove(transition + '-in');
-            document.querySelector('.vue-page-active').classList.remove(transition + '-in');
+            console.log('doTransition(REMOVE): ', transition)
+            document.querySelectorAll('.vue-page').forEach(function (el) {
+                el.classList.remove(transition + '-out');
+                el.classList.remove(transition + '-in');
+            });
             onEnd();
         }
 
-        current.removeEventListener('animationend', fn);
-        current.addEventListener('animationend', fn);
+        page.removeEventListener('animationend', fn);
+        page.addEventListener('animationend', fn);
 
-        current.classList.add(transition + '-out');
+        active.classList.add(transition + '-out');
         page.classList.add(transition + '-in');
     }
 
@@ -243,7 +263,7 @@
     });
 
     // Loading state machine (with delay)
-    function Loading(container) {
+    function Loading() {
         var _handles = [];
         // register new handle loading
         this.register = function (delay, start) {
@@ -260,7 +280,7 @@
                 handle.state = 'waiting';
                 setTimeout(function () {
                     if (handle.state !== 'waiting') return;
-                    handle.stop = handle.start(target, container);
+                    handle.stop = handle.start(target);
                     handle.state = 'start';
                 }, handle.delay);
             });

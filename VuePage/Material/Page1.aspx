@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Page1" Language="C#" MasterPageFile="~/Mobile/Mobile.master" %>
+﻿<%@ Page Title="Page1" Language="C#" MasterPageFile="~/Material/Material.master" %>
 <script runat="server">
 
     public class PageViewModel : Vue.ViewModel<PageViewModel>

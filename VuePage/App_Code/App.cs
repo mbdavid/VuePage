@@ -20,14 +20,14 @@ namespace Vue
         #region Properties
 
         /// <summary>
-        /// CSS class for vue-container div
+        /// Get/Set view model class type to be created in Load (if empty, search for nested paged class view model)
         /// </summary>
-        public string CssClassContainer { get; set; }
+        public string ViewModelType { get; set; }
 
         /// <summary>
-        /// CSS class for inner vue-page div
+        /// CSS class for vue-page div
         /// </summary>
-        public string CssClassPage { get; set; }
+        public string CssClass { get; set; }
 
         /// <summary>
         /// Define default transition between pages
@@ -57,6 +57,20 @@ namespace Vue
 
         #region Mount
 
+        /// <summary>
+        /// Load viewmodel on OnInit to avoid all Page lifecycle
+        /// </summary>
+        protected override void OnInit(EventArgs e)
+        {
+            base.OnInit(e);
+
+            var viewModelType = string.IsNullOrEmpty(ViewModelType) ?
+                Page.GetType().GetNestedTypes().FirstOrDefault(x => typeof(IViewModel).IsAssignableFrom(x)) :
+                Type.GetType(ViewModelType, true, true);
+
+            this.Mount(viewModelType);
+        }
+
         public void Mount<T>() where T : IViewModel, new()
         {
             Mount(new T());
@@ -78,9 +92,7 @@ namespace Vue
                 else throw new SystemException("ViewModel contains unknown ctor parameter: " + par.Name);
             }
 
-            var vm = (IViewModel)Activator.CreateInstance(type, parameters.ToArray());
-
-            Mount(vm);
+            _vm = (IViewModel)Activator.CreateInstance(type, parameters.ToArray());
         }
 
         public void Mount(IViewModel vm)
@@ -140,10 +152,8 @@ namespace Vue
             {
                 var options = new { history = HistoryLength, defaultTransition = DefaultTransition, backTransition = BackTransition };
 
-                writer.WriteLine("<div class=\"vue-container {0}\" data-options='{1}'>", CssClassContainer, JsonConvert.SerializeObject(options));
-                writer.WriteLine("<div class=\"vue-page vue-page-active {0}\" data-url=\"{1}\">", CssClassPage, Page.Request.Url.AbsoluteUri);
+                writer.WriteLine("<div class='vue-page vue-page-active {0}' data-url='{1}' data-options='{2}'>", CssClass, Page.Request.Url.AbsoluteUri, JsonConvert.SerializeObject(options));
                 base.Render(writer);
-                writer.WriteLine("</div>");
                 writer.WriteLine("</div>");
                 writer.WriteLine("<script>");
                 writer.WriteLine("document.addEventListener('DOMContentLoaded', function() {");

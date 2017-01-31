@@ -1,14 +1,4 @@
 ﻿<%@ Master Language="C#" EnableViewState="false" %>
-<script runat="server">
-
-    public void Page_Load(object sender, EventArgs e)
-    {
-        var viewModelType = Page.GetType().GetNestedTypes().FirstOrDefault(x => typeof(IViewModel).IsAssignableFrom(x));
-
-        vm.Mount(viewModelType);
-    }
-
-</script>
 <!DOCTYPE html>
 <html>
 <head runat="server">
@@ -18,17 +8,16 @@
     <link rel="stylesheet" href="/Layout/overlay.css" />
 </head>
 <body>
-    <form runat="server">
-        <p>
-            [ <a href="/" data-transition="slide-right">Home</a> ] &nbsp;&nbsp;
-            [ <a href="/" target="_self">Home (full)</a> ] &nbsp;&nbsp;
-        </p>
-        <h1>Static Master Page <small>(<%= DateTime.Now.ToString("ss") %>)</small></h1>
-        <hr />
-        <vue:App runat="server" id="vm" HistoryLength="5" DefaultTransition="slide-left" BackTransition="slide-right">
-            <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
-        </vue:App>
-    </form>
+    <p>
+        [ <a href="/" data-transition="slide-right">Home</a> ] &nbsp;&nbsp;
+        [ <a href="/" target="_self">Home (full)</a> ] &nbsp;&nbsp;
+    </p>
+    <h1>Static Master Page <small>(<%= DateTime.Now.ToString("ss") %>)</small></h1>
+    <hr />
+    <vue:App runat="server" id="vm" HistoryLength="5" DefaultTransition="slide-left" BackTransition="slide-right">
+        <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
+    </vue:App>
+
     <script src="/Scripts/vue.js"></script>
     <script src="/Scripts/vue-page.js?_=<%= new Random().Next(0, 10000) %>"></script>
 

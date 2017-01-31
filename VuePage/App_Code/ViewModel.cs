@@ -142,8 +142,8 @@ namespace Vue
 
             writer.Length -= 2;
 
-            writer.AppendLine("\n  },");
-            writer.AppendLine("  mounted: function() { this.$el.style['visibility'] = 'visible'; }");
+            writer.AppendLine("\n  }");
+            //writer.AppendLine("  mounted: function() { this.$el.style['visibility'] = 'visible'; }");
             writer.AppendLine("});");
 
             // add user javascript

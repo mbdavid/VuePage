@@ -3,6 +3,12 @@
 
     public class VM : Vue.ViewModel<VM>
     {
+        public VM()
+        {
+            if(!IsPost) System.Threading.Thread.Sleep(1500);
+        }
+
+
         public void Wait(int s)
         {
             System.Threading.Thread.Sleep(s * 1000);

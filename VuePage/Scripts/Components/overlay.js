@@ -23,18 +23,18 @@ Vue.directive('overlay', {
 });
 
 // Global overlay (if not preset in element)
-Vue.$loading(500, function (target, container) {
+Vue.$loading(500, function (target) {
     var show = (target == null || target.getAttribute('data-overlay') !== 'true');
     var panel = null;
     if (show) {
         panel = document.createElement('div');
         panel.className = 'overlay';
-        container.appendChild(panel);
+        document.body.appendChild(panel);
     }
 
     return function () {
         if (!show) return;
-        container.removeChild(panel);
+        document.body.removeChild(panel);
     }
 
 })
