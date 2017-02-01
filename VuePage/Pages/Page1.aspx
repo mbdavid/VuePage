@@ -15,6 +15,8 @@
             // Initial values (will be replaced when post)
             Items.Add(new Todo { Text = "My first demo" });
             Items.Add(new Todo { Text = "Was done", Done = true });
+
+            Watch(x => x.CurrentText, () => JS.Alert("alterado: " + CurrentText));
         }
 
         public void Add()
@@ -28,9 +30,10 @@
             Items.RemoveAt(index);
         }
 
+        [Vue.Confirm("Clear all items?")]
         public void Clear()
         {
-            Items.RemoveAll(x => x.Done);
+            Items.Clear();
         }
     }
 
@@ -50,6 +53,7 @@
 
     <input type="text" v-model="CurrentText" autofocus id="txt" />
     <button v-on:click="Add()" :disabled="!CurrentText" type="button" v-default-enter>Add</button>
+    <button v-on:click="Clear()" type="button">Clear</button>
     <hr />
     <ul>
         <li v-for="(Item, i) in Items">

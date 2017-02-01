@@ -54,7 +54,7 @@
             }
 
             // Execute ajax POST request for update model
-            function ajax(options, finish) {
+            function ajax(request, finish) {
 
                 var xhr = new XMLHttpRequest();
                 var files = [];
@@ -64,7 +64,7 @@
                         _queue = [];
                         _running = false;
                         loading.stop();
-                        options.vm.$el.innerHTML = xhr.responseText;
+                        request.vm.$el.innerHTML = xhr.responseText;
                         return;
                     }
 
@@ -78,13 +78,13 @@
                     Object.keys(update).forEach(function (key) {
                         var value = update[key];
                         console.log('  $data["' + key + '"] = ', value);
-                        options.vm.$data[key] = value;
+                        request.vm.$data[key] = value;
                     });
 
                     if (js) {
                         console.log('  Eval = ', response['js']);
                         setTimeout(function () {
-                            new Function(js).call(options.vm);
+                            new Function(js).call(request.vm);
                         })
                     }
 
@@ -94,13 +94,13 @@
                 // create form with all data
                 var form = new FormData();
 
-                form.append('_method', options.name);
-                form.append('_params', JSON.stringify(options.params));
-                form.append('_model', JSON.stringify(options.vm.$data));
+                form.append('_method', request.name);
+                form.append('_params', JSON.stringify(request.params));
+                form.append('_model', JSON.stringify(request.vm.$data));
 
                 // select elements with for upload file
-                if (options.files) {
-                    files = options.vm.$el.querySelectorAll(options.files);
+                if (request.files) {
+                    files = request.vm.$el.querySelectorAll(request.files);
                     files.forEach(function (file) {
                         for (var i = 0; i < file.files.length; i++) {
                             form.append('_files', file.files[i]);
@@ -109,7 +109,7 @@
                     });
                 }
 
-                console.log('Execute ("' + options.name + '") = ', options.params);
+                console.log('Execute ("' + request.name + '") = ', request.params);
 
                 xhr.open('POST', location.href, true);
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');

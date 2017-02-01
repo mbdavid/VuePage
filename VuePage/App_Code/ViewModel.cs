@@ -73,7 +73,7 @@ namespace Vue
         {
             var v = new JsExpressionVisitor();
             v.Visit(expr);
-            var js = "return " + v.JavaScriptCode + "(this);";
+            var js = "return (" + v.JavaScriptCode + ")(this);";
 
             _computed.Add(key, js);
         }
@@ -101,6 +101,10 @@ namespace Vue
 
             foreach (var m in methods)
             {
+                // checks if method contains Script attribute (will run before call $server)
+                var attr = m.GetCustomAttribute<ScriptAttribute>(true);
+                var script = attr == null ? null : attr.Code + "\n      ";
+
                 // get all parameters without HttpPostFile parameters
                 var parameters = m.GetParameters()
                     .Where(x => x.ParameterType != typeof(HttpPostedFile) && x.ParameterType != typeof(List<HttpPostedFile>))
@@ -112,9 +116,10 @@ namespace Vue
                     .Select(x => x.Name)
                     .FirstOrDefault() ?? "null";
 
-                writer.AppendFormat("    '{0}': function({1}) {{ this.$server('{0}', [{2}], {3}, this); }},\n", 
+                writer.AppendFormat("    '{0}': function({1}) {{\n      {2}this.$server('{0}', [{3}], {4}, this);\n    }},\n", 
                     m.Name,
                     string.Join(", ", m.GetParameters().Select(x => x.Name)),
+                    script, 
                     string.Join(", ", parameters),
                     upload);
             }
@@ -125,7 +130,7 @@ namespace Vue
 
             foreach (var c in _computed)
             {
-                writer.AppendFormat("    '{0}': function() {{ {1} }},\n",
+                writer.AppendFormat("    '{0}': function() {{\n      {1}\n    }},\n",
                     c.Key,
                     c.Value);
             }
@@ -136,14 +141,13 @@ namespace Vue
 
             foreach(var w in _watch.Keys)
             {
-                writer.AppendFormat("    '{0}': {{ handler: function(v, o) {{ this.$server('NotifyWatch', ['{0}', v, o], this); }}, deep: true }},\n", 
+                writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{ this.$server('NotifyWatch', ['{0}', v, o], this); }},\n      deep: true\n    }},\n", 
                     w);
             }
 
             writer.Length -= 2;
 
             writer.AppendLine("\n  }");
-            //writer.AppendLine("  mounted: function() { this.$el.style['visibility'] = 'visible'; }");
             writer.AppendLine("});");
 
             // add user javascript
