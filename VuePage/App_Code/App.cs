@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using Newtonsoft.Json;
@@ -15,6 +16,7 @@ namespace Vue
 {
     public class App : Control
     {
+        private static Regex _re = new Regex(@"(<script?\b[^>]*>([\s\S]*?)<\/script>)|(<style[^>]*>([\s\S]*?)<\/style>)", RegexOptions.Compiled);
         private IViewModel _vm = null;
 
         #region Properties
@@ -114,13 +116,7 @@ namespace Vue
             {
                 var sb = new StringBuilder();
 
-                using (var sw = new StringWriter(sb))
-                {
-                    using (var w = new HtmlTextWriter(sw))
-                    {
-                        base.Render(w);
-                    }
-                }
+                RenderControl(sb);
 
                 sb.AppendLine("<script>");
                 sb.AppendLine("(function() {");
@@ -151,15 +147,31 @@ namespace Vue
             else
             {
                 var options = new { history = HistoryLength, defaultTransition = DefaultTransition, backTransition = BackTransition };
+                var w = new StringBuilder();
+                var scripts = new StringBuilder();
+                var styles = new StringBuilder();
+
+                RenderControl(w);
+
+                // remove script tags
+                var html = _re.Replace(w.ToString(), (m) =>
+                {
+                    scripts.AppendLine(m.Groups[1].Value.Trim());
+                    styles.AppendLine(m.Groups[3].Value.Trim());
+                    return "";
+                });
 
                 writer.WriteLine("<div class='vue-page vue-page-active {0}' data-url='{1}' data-options='{2}'>", CssClass, Page.Request.Url.AbsoluteUri, JsonConvert.SerializeObject(options));
-                base.Render(writer);
+                //base.Render(writer);
+                writer.WriteLine(html);
                 writer.WriteLine("</div>");
                 writer.WriteLine("<script>");
                 writer.WriteLine("document.addEventListener('DOMContentLoaded', function() {");
                 writer.WriteLine(_vm.RenderScript());
                 writer.WriteLine("}, false);");
                 writer.WriteLine("</script>");
+                writer.WriteLine(scripts.ToString());
+                writer.WriteLine(styles.ToString());
             }
         }
 
@@ -169,6 +181,17 @@ namespace Vue
             Page.Response.ContentType = "text/json";
             Page.Response.Write(content);
             Page.Response.End();
+        }
+
+        private void RenderControl(StringBuilder sb)
+        {
+            using (var sw = new StringWriter(sb))
+            {
+                using (var w = new HtmlTextWriter(sw))
+                {
+                    base.Render(w);
+                }
+            }
         }
 
         #endregion

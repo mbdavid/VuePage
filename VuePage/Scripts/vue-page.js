@@ -1,9 +1,11 @@
 ﻿(function () {
 
     var page = document.querySelector('.vue-page');
+    var head = document.querySelector('head')
 
     // if not found first page is missing <vue:App>
     if (page == null) return;
+    if (head == null) return alert('Tag <head> not found');
 
     var options = JSON.parse(page.getAttribute('data-options') || '{}');
     var loading = new Loading(0);
@@ -202,8 +204,9 @@
             }
 
             var response = xhr.responseText;
-            var scripts = /<script\b[^>]*>([\s\S]*?)<\/script>/gm.exec(response);
-            var html = response.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/g, '');
+            var re = /(<script?\b[^>]*>([\s\S]*?)<\/script>)|(<style[^>]*>([\s\S]*?)<\/style>)/gm;
+            var html = response.replace(re, '');
+            var tags = re.exec(response);
 
             // set new page content
             page.innerHTML = html;
@@ -218,9 +221,26 @@
             // insert new page after active page
             active.parentNode.insertBefore(page, active.nextSibling);
 
-            // evaluate new vue instance
+            // evaluate all scripts/styles instance
             setTimeout(function () {
-                new Function(scripts[1]).call(window);
+                while (tags != null) {
+                    var src = /<script.*src=['"](.*?)['"]/g.exec(tags[0]);
+                    var script = tags[2];
+                    var style = tags[4];
+
+                    if (src != null) {
+                        header('script', function (tag) { tag.src = src[1]; });
+                    }
+                    else if (style) {
+                        header('style', function (t) { t.innerHTML = style });
+                    }
+                    else if (script) {
+                        new Function(script).call(window);
+                    }
+
+                    tags = re.exec(response);
+                }
+
             });
 
             doTransition(transition, active, page, autofocus);
@@ -239,10 +259,7 @@
 
         if (!transition) return onEnd();
 
-        console.log('doTransition: ', transition)
-
         var fn = function () {
-            console.log('doTransition(REMOVE): ', transition)
             document.querySelectorAll('.vue-page').forEach(function (el) {
                 el.classList.remove(transition + '-out');
                 el.classList.remove(transition + '-in');
@@ -309,6 +326,13 @@
         var a = document.createElement('a');
         a.href = href;
         return a.href;
+    }
+
+    // create new tag and append into header
+    function header(tagName, fn) {
+        var tag = document.createElement(tagName);
+        fn(tag);
+        head.appendChild(tag);
     }
 
 })();
