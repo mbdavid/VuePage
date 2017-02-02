@@ -221,30 +221,42 @@
             // insert new page after active page
             active.parentNode.insertBefore(page, active.nextSibling);
 
-            // evaluate all scripts/styles instance
-            setTimeout(function () {
-                while (tags != null) {
-                    var src = /<script.*src=['"](.*?)['"]/g.exec(tags[0]);
-                    var script = tags[2];
-                    var style = tags[4];
+            // script/style queue to insert in order
+            var queue = [];
 
-                    if (src != null) {
-                        header('script', function (tag) { tag.src = src[1]; });
-                    }
-                    else if (style) {
-                        header('style', function (t) { t.innerHTML = style });
-                    }
-                    else if (script) {
-                        new Function(script).call(window);
-                    }
+            while (tags != null) {
+                var src = /<script.*src=['"](.*?)['"]/g.exec(tags[0]);
+                queue.push({ script: tags[2], style: tags[4], src: src == null ? null : src[1] });
+                tags = re.exec(response);
+            }
 
-                    tags = re.exec(response);
+            // execute all scripts/styles in queue
+            function exec() {
+
+                // run transaction when queue fisish
+                if (queue.length == 0) {
+                    return doTransition(transition, active, page, autofocus);
                 }
 
-            });
+                var item = queue.shift();
 
-            doTransition(transition, active, page, autofocus);
+                if (item.src) {
+                    return header('script', function (tag) {
+                        tag.onload = exec;
+                        tag.src = item.src;
+                    });
+                }
+                else if (item.style) {
+                    header('style', function (t) { t.innerHTML = item.style });
+                }
+                else if (item.script) {
+                    new Function(item.script).call(window);
+                }
+                exec();
+            }
 
+            // evaluate all scripts/styles instance
+            setTimeout(exec);
         };
 
         loading.start(null);

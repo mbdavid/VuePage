@@ -18,6 +18,9 @@
         console.log('From page inside an script block');
     </script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js">content-jquery</script>
+    <script>
+        console.log('jQuery is installed?', $);
+    </script>
 
     <style>
         h2 { color: red; }
