@@ -4,10 +4,15 @@
     public class VM : Vue.ViewModel<VM>
     {
         public string Now => DateTime.Now.ToString();
+
+        public VM()
+        {
+            //if(!IsPost) System.Threading.Thread.Sleep(2000);
+        }
     }
 
 </script>
-<asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
+<asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">Page2:
 
     <a href="Page1.aspx" data-transition="slide-right"><< Page1</a><hr />
 

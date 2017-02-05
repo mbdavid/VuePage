@@ -3,16 +3,12 @@ Vue.directive('overlay', {
     bind: function (el, binding) {
         el.setAttribute('data-overlay', 'true');
         binding.removeAjaxLoading = Vue.$loading(10, function (target) {
-            var text = '';
             if (target == el) {
                 el.disabled = true;
-                text = el.value;
-                el.value = 'waiting...';
             }
             return function () {
                 if (target == el) {
                     el.disabled = false;
-                    el.value = text;
                 }
             }
         })
@@ -29,12 +25,12 @@ Vue.$loading(500, function (target) {
     if (show) {
         panel = document.createElement('div');
         panel.className = 'overlay';
-        document.body.appendChild(panel);
+        target.appendChild(panel);
     }
 
     return function () {
         if (!show) return;
-        document.body.removeChild(panel);
+        target.removeChild(panel);
     }
 
 })

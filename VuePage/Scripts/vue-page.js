@@ -129,7 +129,7 @@
             if (href.startsWith('http') && !e.target.target) {
                 e.stopPropagation();
                 e.preventDefault();
-                navToPage(e.target.href, e.target.getAttribute('data-transition') || options.defaultTransition);
+                navToPage(e.target.href);
                 return false;
             }
         }
@@ -137,7 +137,7 @@
     });
 
     // navigate to page
-    window.navToPage = function (href, transition) {
+    window.navToPage = function (href) {
         
         var url = resolveUrl(href);
         var hash = /#.*$/.test(url) ? url.match(/#.*$/)[0] : '';
@@ -162,11 +162,11 @@
                 page.classList.add('vue-page-active');
 
                 // toogle display
-                active.style.display = 'none';
                 page.style.removeProperty('display');
+                active.style.display = 'none';
 
-                // do transition
-                return doTransition(transition, active, page, autofocus);
+                // set focus and exit
+                return autofocus();
             }
         }
         else {
@@ -189,8 +189,8 @@
 
         // create new page
         page = document.createElement('div');
-        page.classList.add('vue-page');
         page.setAttribute('data-url', url);
+        page.className = 'vue-page';
 
         var xhr = new XMLHttpRequest();
 
@@ -211,15 +211,12 @@
             // set new page content
             page.innerHTML = html;
 
-            // toggle class
-            active.classList.remove('vue-page-active');
-            page.classList.add('vue-page-active');
-
-            // toggle display
-            active.style.display = 'none';
-
             // insert new page after active page
             active.parentNode.insertBefore(page, active.nextSibling);
+
+            // toogle active page + transition
+            active.classList.remove('vue-page-active');
+            page.classList.add('vue-page-active');
 
             // script/style queue to insert in order
             var queue = [];
@@ -233,9 +230,10 @@
             // execute all scripts/styles in queue
             function exec() {
 
-                // run transaction when queue fisish
                 if (queue.length == 0) {
-                    return doTransition(transition, active, page, autofocus);
+                    // toggle display
+                    active.style.display = 'none';
+                    return autofocus();
                 }
 
                 var item = queue.shift();
@@ -256,39 +254,19 @@
             }
 
             // evaluate all scripts/styles instance
-            setTimeout(exec);
+            setTimeout(exec, 0);
         };
 
-        loading.start(null);
+        loading.start(page);
 
         xhr.open('GET', url, true);
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.send();
     }
 
-    // implement page navigation transition
-    function doTransition(transition, active, page, onEnd) {
-
-        if (!transition) return onEnd();
-
-        var fn = function () {
-            document.querySelectorAll('.vue-page').forEach(function (el) {
-                el.classList.remove(transition + '-out');
-                el.classList.remove(transition + '-in');
-            });
-            onEnd();
-        }
-
-        page.removeEventListener('animationend', fn);
-        page.addEventListener('animationend', fn);
-
-        active.classList.add(transition + '-out');
-        page.classList.add(transition + '-in');
-    }
-
     // back to page
     window.addEventListener('popstate', function (e) {
-        navToPage(location.href + '#restore', options.backTransition);
+        navToPage(location.href + '#restore');
     });
 
     // Loading state machine (with delay)

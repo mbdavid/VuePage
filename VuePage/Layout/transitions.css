@@ -1,18 +1,16 @@
-﻿/*
-.vue-container {
-    position: relative;
-}
-
-.vue-page {
-    animation-duration: .4s;
+﻿.vue-page {
+    animation-duration: 5s;
     animation-fill-mode: both;
     position: absolute;
-    top: 0;
+    top: 110px;
     bottom: 0;
-    left: 0;
-    right: 0;
+    left: 0px;
+    right: 0px;
 }
-*/
+
+.vue-page-active {
+}
+
 .slide-left-in {
     animation-name: slideInLeft;
 }

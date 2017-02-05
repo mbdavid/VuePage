@@ -141,7 +141,7 @@ namespace Vue
 
             foreach(var w in _watch.Keys)
             {
-                writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{ this.$server('NotifyWatch', ['{0}', v, o], this); }},\n      deep: true\n    }},\n", 
+                writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{ this.$server('NotifyWatch', ['{0}', v, o], null, this); }},\n      deep: true\n    }},\n", 
                     w);
             }
 

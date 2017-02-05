@@ -4,7 +4,6 @@
 <head runat="server">
     <title><%= Page.Title %></title>
     <link rel="stylesheet" href="/Layout/vue.css" />
-    <link rel="stylesheet" href="/Layout/transitions.css" />
     <link rel="stylesheet" href="/Layout/overlay.css" />
 </head>
 <body>
@@ -13,8 +12,8 @@
         [ <a href="/" target="_self">Home (full)</a> ] &nbsp;&nbsp;
     </p>
     <h1>Static Master Page <small>(<%= DateTime.Now.ToString("ss") %>)</small></h1>
-    <hr />
-    <vue:App runat="server" id="vm" HistoryLength="5" DefaultTransition="slide-left" BackTransition="slide-right">
+
+    <vue:App runat="server" id="vm" HistoryLength="5">
         <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
     </vue:App>
 

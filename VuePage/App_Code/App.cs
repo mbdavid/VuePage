@@ -27,21 +27,6 @@ namespace Vue
         public string ViewModelType { get; set; }
 
         /// <summary>
-        /// CSS class for vue-page div
-        /// </summary>
-        public string CssClass { get; set; }
-
-        /// <summary>
-        /// Define default transition between pages
-        /// </summary>
-        public string DefaultTransition { get; set; }
-
-        /// <summary>
-        /// Define back transition when users call back browser button
-        /// </summary>
-        public string BackTransition { get; set; }
-
-        /// <summary>
         /// Keep, in browser, history viewmodel to preserve restore
         /// </summary>
         public int HistoryLength { get; set; } = 3;
@@ -146,7 +131,7 @@ namespace Vue
             // simple GET/POST request (render template + script)
             else
             {
-                var options = new { history = HistoryLength, defaultTransition = DefaultTransition, backTransition = BackTransition };
+                var options = new { history = HistoryLength };
                 var w = new StringBuilder();
                 var scripts = new StringBuilder();
                 var styles = new StringBuilder();
@@ -161,7 +146,7 @@ namespace Vue
                     return "";
                 });
 
-                writer.WriteLine("<div class='vue-page vue-page-active {0}' data-url='{1}' data-options='{2}'>", CssClass, Page.Request.Url.AbsoluteUri, JsonConvert.SerializeObject(options));
+                writer.WriteLine("<div class='vue-page vue-page-active' data-url='{0}' data-options='{1}'>", Page.Request.Url.AbsoluteUri, JsonConvert.SerializeObject(options, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
                 //base.Render(writer);
                 writer.WriteLine(html);
                 writer.WriteLine("</div>");

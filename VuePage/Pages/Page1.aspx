@@ -16,7 +16,7 @@
             Items.Add(new Todo { Text = "My first demo" });
             Items.Add(new Todo { Text = "Was done", Done = true });
 
-            Watch(x => x.CurrentText, () => JS.Alert("alterado: " + CurrentText));
+            //Watch(x => x.CurrentText, () => JS.Alert("alterado: " + CurrentText));
         }
 
         public void Add()
@@ -44,7 +44,7 @@
     }
 
 </script>
-<asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
+<asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">Page1:
 
     <a href="Page2.aspx" data-transition="slide-left">Page2 >></a><hr />
 
