@@ -129,7 +129,7 @@
             if (href.startsWith('http') && !e.target.target) {
                 e.stopPropagation();
                 e.preventDefault();
-                navToPage(e.target.href);
+                navToPage(e.target.href, e.target.getAttribute('data-transition'));
                 return false;
             }
         }
@@ -137,7 +137,7 @@
     });
 
     // navigate to page
-    window.navToPage = function (href) {
+    window.navToPage = function (href, transition) {
         
         var url = resolveUrl(href);
         var hash = /#.*$/.test(url) ? url.match(/#.*$/)[0] : '';
@@ -163,6 +163,13 @@
 
                 // toogle display
                 page.style.removeProperty('display');
+
+                if (transition) {
+                    active.classList.add(transition + '-out');
+                    page.classList.add(transition + '-in');
+                    return;
+                }
+
                 active.style.display = 'none';
 
                 // set focus and exit
@@ -192,6 +199,9 @@
         page.setAttribute('data-url', url);
         page.className = 'vue-page';
 
+        active.addEventListener('animationEnd', endTransition, false);
+        active.addEventListener('webkitAnimationEnd', endTransition, false);
+
         var xhr = new XMLHttpRequest();
 
         xhr.onload = function () {
@@ -211,12 +221,20 @@
             // set new page content
             page.innerHTML = html;
 
-            // insert new page after active page
-            active.parentNode.insertBefore(page, active.nextSibling);
-
             // toogle active page + transition
             active.classList.remove('vue-page-active');
             page.classList.add('vue-page-active');
+
+            if (transition) {
+                active.classList.add(transition + '-out');
+                page.classList.add(transition + '-in');
+            }
+            else {
+                active.style.display = 'none';
+            }
+
+            // insert new page after active page
+            active.parentNode.insertBefore(page, active.nextSibling);
 
             // script/style queue to insert in order
             var queue = [];
@@ -231,9 +249,7 @@
             function exec() {
 
                 if (queue.length == 0) {
-                    // toggle display
-                    active.style.display = 'none';
-                    return autofocus();
+                    return transition ? false : autofocus();
                 }
 
                 var item = queue.shift();
@@ -268,6 +284,24 @@
     window.addEventListener('popstate', function (e) {
         navToPage(location.href + '#restore');
     });
+
+    // fire when page transition ends
+    function endTransition() {
+
+        var pages = document.querySelectorAll('.vue-page');
+
+        pages.forEach(function (page) {
+            if (page.matches('.vue-page-active')) {
+                page.className = 'vue-page vue-page-active';
+            }
+            else {
+                page.style.display = 'none';
+                page.className = 'vue-page';
+            }
+        })
+
+        autofocus();
+    }
 
     // Loading state machine (with delay)
     function Loading() {

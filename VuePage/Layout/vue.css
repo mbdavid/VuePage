@@ -2,12 +2,6 @@
     border: 1px solid blue;
     padding: 20px;
     background-color: white;
-
-    position: absolute;
-    top: 110px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
 }
 
 .vue-page-active {

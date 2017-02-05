@@ -44,9 +44,9 @@
     }
 
 </script>
-<asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">Page1:
+<asp:Content ID="body" ContentPlaceHolderID="body" Runat="server">
 
-    <a href="Page2.aspx" data-transition="slide-left">Page2 >></a><hr />
+    <a href="Page2.aspx" data-transition="slide-left">Move To Page2 >></a><hr />
 
     <h2>Page 1</h2>
     <hr />

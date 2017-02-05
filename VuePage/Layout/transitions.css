@@ -1,11 +1,12 @@
 ﻿.vue-page {
-    animation-duration: 5s;
+    animation-duration: 2s;
     animation-fill-mode: both;
+
     position: absolute;
     top: 110px;
-    bottom: 0;
-    left: 0px;
-    right: 0px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
 }
 
 .vue-page-active {
