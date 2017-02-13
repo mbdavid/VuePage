@@ -8,6 +8,6 @@ namespace Vue
     public interface IViewModel
     {
         string RenderScript();
-        string UpdateModel(string model, string method, object[] parameters, IList<HttpPostedFile> files);
+        string UpdateModel(string model, string method, JToken[] parameters, IList<HttpPostedFile> files);
     }
 }

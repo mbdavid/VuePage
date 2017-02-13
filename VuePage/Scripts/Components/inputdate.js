@@ -49,3 +49,8 @@ Vue.filter('date', function (value, input) {
         (arr[3] + '/' + arr[2] + '/' + arr[1]) :
         "";
 })
+
+
+Vue.filter('uppercase', function (value, input) {
+    return value.toUpperCase();
+})

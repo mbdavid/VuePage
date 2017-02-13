@@ -165,7 +165,7 @@ namespace Vue
 
         #region Update Model
 
-        public virtual string UpdateModel(string model, string method, object[] parameters, IList<HttpPostedFile> files)
+        public virtual string UpdateModel(string model, string method, JToken[] parameters, IList<HttpPostedFile> files)
         {
             JsonConvert.PopulateObject(model, this, _serializeSettings);
 
@@ -174,7 +174,7 @@ namespace Vue
             return RenderUpdate(model);
         }
 
-        protected virtual void ExecuteMethod(string name, object[] parameters, IList<HttpPostedFile> files)
+        protected virtual void ExecuteMethod(string name, JToken[] parameters, IList<HttpPostedFile> files)
         {
             var method = this.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             var pars = new List<object>();
@@ -192,7 +192,20 @@ namespace Vue
                 }
                 else
                 {
-                    pars.Add(Convert.ChangeType(parameters[index++], p.ParameterType));
+                    var token = parameters[index++];
+
+                    if (token.Type == JTokenType.Object)
+                    {
+                        var obj = ((JObject)token).ToObject(p.ParameterType);
+
+                        pars.Add(obj);
+                    }
+                    else
+                    {
+                        var value = ((JValue)token).Value;
+
+                        pars.Add(Convert.ChangeType(value, p.ParameterType));
+                    }
                 }
             }
 

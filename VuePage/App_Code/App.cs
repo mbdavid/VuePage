@@ -118,7 +118,7 @@ namespace Vue
             {
                 var model = Page.Request.Form["_model"];
                 var method = Page.Request.Form["_method"];
-                var parameters = JArray.Parse(Page.Request.Form["_params"]).Select(x => x.Value<object>()).ToArray();
+                var parameters = JArray.Parse(Page.Request.Form["_params"]).ToArray();
                 var files = Page.Request.Files.GetMultiple("_files");
 
                 // update model, execute server method and return model changes

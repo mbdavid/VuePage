@@ -4,6 +4,7 @@
     public class VM : Vue.ViewModel<VM>
     {
         public string CurrentText { get; set; } = "";
+        public string Filtro { get; set; } = "";
         public List<Todo> Items { get; set; } = new List<Todo>();
 
         public VM()
@@ -17,6 +18,9 @@
             Items.Add(new Todo { Text = "Was done", Done = true });
 
             //Watch(x => x.CurrentText, () => JS.Alert("alterado: " + CurrentText));
+
+            Computed("Filtrado", x => x.Items.Where(z => z.Text.Contains(x.Filtro)));
+
         }
 
         public void Add()
@@ -51,7 +55,7 @@
     <h2>Page 1</h2>
     <hr />
 
-    <input type="text" v-model="CurrentText" autofocus id="txt" />
+    <input type="text" v-model="CurrentText" autofocus/>
     <button v-on:click="Add()" :disabled="!CurrentText" type="button" v-default-enter>Add</button>
     <button v-on:click="Clear()" type="button">Clear</button>
     <hr />
@@ -64,6 +68,15 @@
             <button v-on:click.prevent="Remove(i)" :disabled="Item.Done" type="submit">X</button>
         </li>
     </ul>
+    <hr />
+    Filtrado:
+    <input type="text" v-model="Filtro" />
+    <ul>
+        <li v-for="(Item, i) in Filtrado">{{ Item.Text | uppercase }}</li>
+    </ul>
+
+
+    <pre style="border: 1px solid red; padding: 5px; margin: 15px;">{{$data}}</pre>
     First: {{First}}<br />
     FirstSelected: {{FirstSelected}}<br />
     FirstSelected: {{FirstSel}}<br />
