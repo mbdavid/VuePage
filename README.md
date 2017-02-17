@@ -30,5 +30,9 @@ public class PageViewModel : Vue.ViewModel<PageViewModel>
 - Support Lambda expression to convert to `Computed` javascript 
 - Supports history navigation (ajax page load)
 
-
+# TODO for next version (to desktop)
+- Remove page slide effect
+- Support multi-server-componentes
+- AjaxGet render all body content
+- Need works with aspnet web controls (normal postback)
 
