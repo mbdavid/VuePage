@@ -1,7 +1,7 @@
-﻿<%@ Page Title="Upload" Language="C#" %>
+﻿<%@ Page Language="C#" Title="Upload" %>
 <script runat="server">
 
-    public class VM : Vue.ViewModel<VM>
+    public class PageVM : Vue.ViewModel<PageVM>
     {
         public void UploadSingleFile(string n, HttpPostedFile f)
         {
@@ -25,25 +25,30 @@
     }
 
 </script>
-<asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
+<html>
+<head runat="server"></head>
+<body runat="server">
 
-    <h2>Upload</h2>
-    <hr />
+    <div id="app">
 
-    <fieldset>
-        <legend>Single File</legend>
-        <input type="file" id="f1" />
-        <button type="button" @click="UploadSingleFile('u1', '#f1')">Upload file</button>
-    </fieldset>
+        <h1>Upload</h1><hr />
 
-    <fieldset>
-        <legend>Multi File</legend>
-        <input type="file" multiple="multiple" />
-        <button type="button" @click="UploadMultipleFiles('u2', '[multiple]')">Upload files</button>
-    </fieldset>
+        <fieldset>
+            <legend>Single File</legend>
+            <input type="file" id="f1" />
+            <button type="button" @click="UploadSingleFile('u1', '#f1')">Upload file</button>
+        </fieldset>
 
-    <button type="button" @click="NoUpload()">NoUpload</button>
-    <button type="button" @click="UploadAny('input[type=file]')">Upload from Any</button>
+        <fieldset>
+            <legend>Multi File</legend>
+            <input type="file" multiple="multiple" />
+            <button type="button" @click="UploadMultipleFiles('u2', '[multiple]')">Upload files</button>
+        </fieldset>
 
+        <button type="button" @click="NoUpload()">NoUpload</button>
+        <button type="button" @click="UploadAny('input[type=file]')">Upload from Any</button>
 
-</asp:Content>
+    </div>
+
+</body>
+</html>

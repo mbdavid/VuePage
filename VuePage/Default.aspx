@@ -1,41 +1,42 @@
-﻿<%@ Page Title="Home" Language="C#" %>
+﻿<%@ Page Language="C#" Title="Home" %>
 <script runat="server">
 
-    public class PageViewModel : Vue.ViewModel<PageViewModel>
+    public class PageVM : Vue.ViewModel<PageVM>
     {
         public List<string> Files { get; set; }
         public bool Show { get; set; } = true;
 
-        public PageViewModel(HttpContext ctx)
+        public PageVM(HttpContext ctx)
         {
-            if(!IsPost)
+            Created(() =>
             {
                 var files = System.IO.Directory.GetFiles(ctx.Server.MapPath("~/Pages"), "*.aspx");
                 this.Files = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
                 //JS.Code("console.log('THIS (in created())', this);");
-            }
-        }
-
-        public void FromServer()
-        {
-            JS.Code("console.log('THIS (in method)', this);");
+            });
         }
     }
 
 </script>
-<asp:Content ID="body" ContentPlaceHolderID="body" Runat="Server">
+<html>
+<head runat="server"></head>
+<body runat="server">
 
-    You have {{Files.length}} example pages: <br />
+    <div id="app">
 
-    <input type="button" v-on:click="Show = !Show" :value="Show ? 'Hide' : 'Show'" />
+        <h1>VuePage - Demos</h1><hr />
 
-    <ul v-show="Show">
-        <li v-for="file in Files">
-            <a :href="'/Pages/' + file + '.aspx'">{{file}}</a>
-        </li>
-    </ul>
+        You have {{Files.length}} example pages: <br />
 
-    <hr />
-    <button @click.prevent="FromServer()">"this" FromServer()</button>
+        <input type="button" v-on:click="Show = !Show" :value="Show ? 'Hide' : 'Show'" />
 
-</asp:Content>
+        <ul v-show="Show">
+            <li v-for="file in Files">
+                <a :href="'/Pages/' + file + '.aspx'">{{file}}</a>
+            </li>
+        </ul>
+
+    </div>
+
+</body>
+</html>

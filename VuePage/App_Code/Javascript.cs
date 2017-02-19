@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Newtonsoft.Json;
 
 namespace Vue
 {
@@ -25,12 +26,26 @@ namespace Vue
 
         public Javascript NavigateTo(string url)
         {
-            return Code("navToPage('{0}');", url);
+            return Code("this.$navigate('{0}');", url);
         }
 
         public Javascript RedirectTo(string url)
         {
             return Code("location.href = '{0}';", url);
+        }
+
+        public Javascript Emit(string evnt, params object[] args)
+        {
+            var sb = new StringBuilder("this.$emit('" + evnt +"'");
+
+            foreach(var arg in args)
+            {
+                sb.Append(", " + JsonConvert.SerializeObject(arg));
+            }
+
+            sb.Append(");");
+
+            return Code(sb.ToString());
         }
 
         public Javascript Code(string code)

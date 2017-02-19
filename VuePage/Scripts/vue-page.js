@@ -1,20 +1,7 @@
 ﻿(function () {
 
-    var page = document.querySelector('.vue-page');
-    var head = document.querySelector('head')
-
-    // if not found first page is missing <vue:App>
-    if (page == null) return;
-    if (head == null) return alert('Tag <head> not found');
-
-    var options = JSON.parse(page.getAttribute('data-options') || '{}');
-    var loading = new Loading(0);
-
-    // remove options
-    page.removeAttribute('data-options');
-
     // register Vue.$loading function
-    Vue.$loading = loading.register;
+    var _loading = Vue.$loading = new Loading();
 
     // register vue plugin to server call (vue.$server)
     Vue.use({
@@ -25,8 +12,17 @@
 
             // Request new server call
             vue.prototype.$server = function $server(name, params, files, vm) {
-                var target = (event ? event.target : null) || null;
-                _queue.push({ target: target, name: name, params: params, files: files, vm: vm });
+
+                var target = (event ? event.target : document.body) || document.body;
+
+                _queue.push({
+                    target: target,
+                    name: name,
+                    params: params,
+                    files: files,
+                    vm: vm
+                });
+
                 if (!_running) nextQueue();
             }
 
@@ -38,13 +34,13 @@
                 // get first request from queue
                 var request = _queue.shift();
 
-                loading.start(request.target);
+                _loading.start(request.target);
 
                 setTimeout(function () {
 
                     ajax(request, function () {
 
-                        loading.stop();
+                        _loading.stop();
 
                         // if no more items in queue, stop running
                         if (_queue.length === 0) return _running = false;
@@ -65,7 +61,7 @@
                     if (xhr.status < 200 || xhr.status >= 400) {
                         _queue = [];
                         _running = false;
-                        loading.stop();
+                        _loading.stop();
                         request.vm.$el.innerHTML = xhr.responseText;
                         return;
                     }
@@ -96,6 +92,10 @@
                 // create form with all data
                 var form = new FormData();
 
+                if (request.vm.$options.name) {
+                    form.append('_name', request.vm.$options.name);
+                }
+
                 form.append('_method', request.name);
                 form.append('_params', JSON.stringify(request.params));
                 form.append('_model', JSON.stringify(request.vm.$data));
@@ -120,196 +120,21 @@
         }
     });
 
-    // capture any link click to use "navToPage" method
-    // do not capture if link contains "target" attribute or is not href page
-    document.addEventListener('click', function (e) {
-
-        if (e.target && e.target.tagName === 'A') {
-            var href = e.target.href;
-            if (href.startsWith('http') && !e.target.target) {
-                e.stopPropagation();
-                e.preventDefault();
-                navToPage(e.target.href, e.target.getAttribute('data-transition'));
-                return false;
-            }
-        }
-
-    });
-
-    // navigate to page
-    window.navToPage = function (href, transition) {
-        
-        var url = resolveUrl(href);
-        var hash = /#.*$/.test(url) ? url.match(/#.*$/)[0] : '';
-        url = url.replace(/#.*$/, '');
-
-        console.log('Navigate to page: ' + url);
-
-        // check if page already exists in body (get from url)
-        var active = document.querySelector('.vue-page-active');
-        var page = document.querySelector('.vue-page[data-url="' + url + '"]');
-
-        // if navToPage came from Back button, do not push state
-        if (location.href != url) {
-            history.pushState(null, null, url);
-        }
-
-        if (/^#restore$/i.test(hash)) {
-            // if restoring and page are in html, just toggle
-            if (page != null) {
-                // toogle class
-                active.classList.remove('vue-page-active');
-                page.classList.add('vue-page-active');
-
-                // toogle display
-                page.style.removeProperty('display');
-
-                if (transition) {
-                    active.classList.add(transition + '-out');
-                    page.classList.add(transition + '-in');
-                    return;
-                }
-
-                active.style.display = 'none';
-
-                // set focus and exit
-                return autofocus();
-            }
-        }
-        else {
-            // if pages already exists, remove/destroy first
-            if (page != null) {
-                page.__vue__.$destroy();
-                page.parentNode.removeChild(page);
-                page = null;
-            }
-        }
-
-        // avoid too many pages in memory
-        var pages = document.querySelectorAll('.vue-page');
-
-        if (pages.length > options.history) {
-            var first = pages[0];
-            first.__vue__.$destroy();
-            first.parentNode.removeChild(first);
-        }
-
-        // create new page
-        page = document.createElement('div');
-        page.setAttribute('data-url', url);
-        page.className = 'vue-page';
-
-        active.addEventListener('animationEnd', endTransition, false);
-        active.addEventListener('webkitAnimationEnd', endTransition, false);
-
-        var xhr = new XMLHttpRequest();
-
-        xhr.onload = function () {
-
-            loading.stop();
-
-            if (xhr.status < 200 || xhr.status >= 400) {
-                active.innerHTML = xhr.responseText;
-                return;
-            }
-
-            var response = xhr.responseText;
-            var re = /(<script?\b[^>]*>([\s\S]*?)<\/script>)|(<style[^>]*>([\s\S]*?)<\/style>)/gm;
-            var html = response.replace(re, '');
-            var tags = re.exec(response);
-
-            // set new page content
-            page.innerHTML = html;
-
-            // toogle active page + transition
-            active.classList.remove('vue-page-active');
-            page.classList.add('vue-page-active');
-
-            if (transition) {
-                active.classList.add(transition + '-out');
-                page.classList.add(transition + '-in');
-            }
-            else {
-                active.style.display = 'none';
-            }
-
-            // insert new page after active page
-            active.parentNode.insertBefore(page, active.nextSibling);
-
-            // script/style queue to insert in order
-            var queue = [];
-
-            while (tags != null) {
-                var src = /<script.*src=['"](.*?)['"]/g.exec(tags[0]);
-                queue.push({ script: tags[2], style: tags[4], src: src == null ? null : src[1] });
-                tags = re.exec(response);
-            }
-
-            // execute all scripts/styles in queue
-            function exec() {
-
-                if (queue.length == 0) {
-                    return transition ? false : autofocus();
-                }
-
-                var item = queue.shift();
-
-                if (item.src) {
-                    return header('script', function (tag) {
-                        tag.onload = exec;
-                        tag.src = item.src;
-                    });
-                }
-                else if (item.style) {
-                    header('style', function (t) { t.innerHTML = item.style });
-                }
-                else if (item.script) {
-                    new Function(item.script).call(window);
-                }
-                exec();
-            }
-
-            // evaluate all scripts/styles instance
-            setTimeout(exec, 0);
-        };
-
-        loading.start(page);
-
-        xhr.open('GET', url, true);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        xhr.send();
-    }
-
-    // back to page
-    window.addEventListener('popstate', function (e) {
-        navToPage(location.href + '#restore');
-    });
-
-    // fire when page transition ends
-    function endTransition() {
-
-        var pages = document.querySelectorAll('.vue-page');
-
-        pages.forEach(function (page) {
-            if (page.matches('.vue-page-active')) {
-                page.className = 'vue-page vue-page-active';
-            }
-            else {
-                page.style.display = 'none';
-                page.className = 'vue-page';
-            }
-        })
-
-        autofocus();
-    }
-
     // Loading state machine (with delay)
     function Loading() {
         var _handles = [];
-        // register new handle loading
+        // register new handle loading and returns a function thats remove this hander (un-register)
+        // start function be called when need show and must return OnEnd handler function
         this.register = function (delay, start) {
-            var handle = { delay: delay, start: start, state: 'stop', stop: null };
+            var handle = {
+                delay: delay,
+                start: start,
+                stop: null,
+                state: 'stop'
+            };
             _handles.push(handle);
+
+            // returing un-register function
             return function () {
                 _handles.splice(_handles.indexOf(handle), 1);
             }
@@ -321,7 +146,7 @@
                 handle.state = 'waiting';
                 setTimeout(function () {
                     if (handle.state !== 'waiting') return;
-                    handle.stop = handle.start(target);
+                    handle.stop = handle.start(target || document.body);
                     handle.state = 'start';
                 }, handle.delay);
             });
@@ -334,29 +159,6 @@
                 handle.state = 'stop';
             });
         }
-    }
-
-    // execute autofocus
-    function autofocus() {
-        setTimeout(function () {
-            var focus = document.querySelector('.vue-page-active [autofocus]');
-            if (focus == null) return;
-            try { focus.focus(); } catch (e) { }
-        }, 1);
-    }
-
-    // get full path from href
-    function resolveUrl(href) {
-        var a = document.createElement('a');
-        a.href = href;
-        return a.href;
-    }
-
-    // create new tag and append into header
-    function header(tagName, fn) {
-        var tag = document.createElement(tagName);
-        fn(tag);
-        head.appendChild(tag);
     }
 
 })();

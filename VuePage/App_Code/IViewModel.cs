@@ -7,7 +7,9 @@ namespace Vue
 {
     public interface IViewModel
     {
-        string RenderScript();
+        string RenderInitialize(string el);
+        string RenderComponent(string name, string template);
+
         string UpdateModel(string model, string method, JToken[] parameters, IList<HttpPostedFile> files);
     }
 }

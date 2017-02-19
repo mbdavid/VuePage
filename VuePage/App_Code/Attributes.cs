@@ -23,4 +23,14 @@ namespace Vue
         {
         }
     }
+
+    public class PropAttribute : Attribute
+    {
+        public string Name { get; set; }
+
+        public PropAttribute(string name)
+        {
+            Name = name;
+        }
+    }
 }

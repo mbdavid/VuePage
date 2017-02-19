@@ -17,6 +17,7 @@ namespace Vue
     public class ViewModel<T> : IViewModel
     {
         private Javascript _js = new Javascript();
+        private List<Action> _created = new List<Action>();
         private Dictionary<string, string> _computed = new Dictionary<string, string>();
         private Dictionary<string, Action<object, object>> _watch = new Dictionary<string, Action<object, object>>();
         private JsonSerializerSettings _serializeSettings = new JsonSerializerSettings
@@ -27,11 +28,32 @@ namespace Vue
 
         protected Javascript JS { get { return _js; } }
 
-        protected bool IsPost { get; } = HttpContext.Current.Request.HttpMethod == "POST";
-
         public ViewModel()
         {
         }
+
+        #region Created
+
+        /// <summary>
+        /// Register created server event
+        /// </summary>
+        protected void Created(Action action)
+        {
+            _created.Add(action);
+        }
+
+        /// <summary>
+        /// Execute called event from client
+        /// </summary>
+        protected void OnCreated()
+        {
+            foreach(var action in _created)
+            {
+                action();
+            }
+        }
+
+        #endregion
 
         #region Watch
 
@@ -87,15 +109,63 @@ namespace Vue
 
         #region RenderScript
 
-        public virtual string RenderScript()
+        public virtual string RenderInitialize(string el)
+        {
+            // created event are called when render initilize
+            OnCreated();
+
+            var writer = new StringBuilder();
+
+            writer.AppendLine("new Vue({");
+            writer.AppendFormat("  el: '{0}',\n", el);
+
+            writer.AppendLine("  created: function() {");
+            writer.AppendLine("     this.$registerPageVM(this);");
+            writer.AppendLine(_js.ToString());
+            writer.AppendLine("  },");
+
+            RenderBody(writer);
+
+            return writer.ToString();
+        }
+
+        public virtual string RenderComponent(string name, string template)
         {
             var writer = new StringBuilder();
+
+            var props = this.GetType()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(x => x.GetCustomAttribute<PropAttribute>() != null)
+                .Select(x => new { Prop = x.GetCustomAttribute<PropAttribute>().Name, Name = x.Name })
+                .ToArray();
+
+            writer.AppendFormat("Vue.component('{0}', {{\n", name);
+            writer.AppendFormat("  name: '{0}',\n", name);
+            writer.AppendFormat("  template: '{0}',\n", template);
+            writer.AppendFormat("  props: [{0}],\n", string.Join(", ", props.Select(x => "'" + x.Prop + "'")));
+
+            writer.AppendLine("  created: function() {");
+            writer.Append(string.Join("\n", props.Select(x => string.Format("    this.{0} = this.{1};", x.Name, x.Prop))));
+            writer.AppendLine(_js.ToString());
+
+            if(_created != null)
+            {
+                writer.AppendLine("    this.$server('OnCreated', [], null, this);");
+            }
+
+            writer.AppendLine("  },");
+
+            RenderBody(writer);
+
+            return writer.ToString();
+        }
+
+        private void RenderBody(StringBuilder writer)
+        {
             var model = JObject.FromObject(this);
 
-            writer.Append("var vm = new Vue({\n");
-            writer.Append("  el: '.vue-page-active',\n");
-            writer.AppendFormat("  data: {0},\n", JsonConvert.SerializeObject(this, _serializeSettings));
-            writer.AppendLine("  methods: { ");
+            writer.AppendFormat("  data: function() {{ return {0}; }},\n", JsonConvert.SerializeObject(this, _serializeSettings));
+            writer.AppendLine("  methods: {");
 
             var methods = this.GetType().GetMethods(BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(x => !x.IsSpecialName).ToArray();
 
@@ -125,8 +195,9 @@ namespace Vue
             }
 
             writer.Length -= 2;
-            writer.AppendLine("\n  },");
-            writer.AppendLine("  computed: { ");
+            writer.AppendLine();
+            writer.AppendLine("  },");
+            writer.AppendLine("  computed: {");
 
             foreach (var c in _computed)
             {
@@ -136,8 +207,9 @@ namespace Vue
             }
 
             writer.Length -= 2;
-            writer.AppendLine("\n  },");
-            writer.AppendLine("  watch: { ");
+            writer.AppendLine();
+            writer.AppendLine("  },");
+            writer.AppendLine("  watch: {");
 
             foreach(var w in _watch.Keys)
             {
@@ -147,18 +219,9 @@ namespace Vue
 
             writer.Length -= 2;
 
-            writer.AppendLine("\n  }");
+            writer.AppendLine();
+            writer.AppendLine("  }");
             writer.AppendLine("});");
-
-            // add user javascript
-            if(_js.Length > 0)
-            {
-                writer.AppendLine("(function() {");
-                writer.AppendLine(_js.ToString());
-                writer.AppendLine("}).call(vm)");
-            }
-
-            return writer.ToString();
         }
 
         #endregion
