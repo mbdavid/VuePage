@@ -72,9 +72,10 @@ namespace Vue
         private void RegisterScripts()
         {
             // register vue/vue-page scripts
-            Header.Controls.Add(new ASP.LiteralControl("\n<script src=\"/Scripts/vue.js\"></script>\n"));
-            Header.Controls.Add(new ASP.LiteralControl("<script src=\"/Scripts/vue-page.js\"></script>\n"));
-            Header.Controls.Add(new ASP.LiteralControl("<script src=\"/Scripts/vue-ajaxget.js\"></script>\n"));
+            Header.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue.js"))));
+            Header.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-page.js"))));
+            Header.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-ajaxget.js"))));
+
             Header.Controls.Add(new ASP.LiteralControl("<script src=\"VueHandler.ashx\"></script>\n"));
         }
 

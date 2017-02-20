@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>VuePage</id>
+        <version>1.0.0</version>
+        <title>VuePage</title>
+        <authors>Mauricio David</authors>
+        <projectUrl>http://github.com/mbdavid/VuePage</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Vue - ViewModel from server side</description>
+        <summary>Vue - ViewModel from server side</summary>
+        <copyright>MIT</copyright>
+        <language>en-US</language>
+        <tags>mvvm vue viewmodel server side webforms</tags>
+    </metadata>
+    <files>
+        <file src="VuePage\bin\Release\VuePage.dll" target="lib\net40\VuePage.dll" />
+        <file src="VuePage\bin\Release\VuePage.xml" target="lib\net40\VuePage.xml" />
+    </files>
+</package>

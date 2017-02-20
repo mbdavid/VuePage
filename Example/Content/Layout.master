@@ -5,13 +5,13 @@
 </script>
 <html>
 <head runat="server">
-    <link href="_site.css" rel="stylesheet" />
+    <link href="/Content/site.css" rel="stylesheet" />
 </head>
 <body runat="server">
     <a href="/">[ Home ]</a><hr />
     <div id="app" v-cloak>
         <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
     </div>
-    <script src="_addons.js"></script>
+    <script src="/Content/addons.js"></script>
 </body>
 </html>
