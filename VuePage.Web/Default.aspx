@@ -12,7 +12,6 @@
             {
                 var files = System.IO.Directory.GetFiles(ctx.Server.MapPath("~/Pages"), "*.aspx");
                 this.Files = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
-                //JS.Code("console.log('THIS (in created())', this);");
             });
         }
     }

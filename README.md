@@ -1,9 +1,9 @@
 # VuePage
 
-Implement server-side of ViewModel for `Vue` to old-but-good ASP.NET 4.5 website
+Implement server-side of ViewModel for `Vue` on WebForm page.
 
 ```C#
-public class PageViewModel : Vue.ViewModel<PageViewModel>
+public class PageVM : Vue.ViewModel<PageVM>
 {
     public Username { get; set; }
     public Password { get; set; }
@@ -17,20 +17,24 @@ public class PageViewModel : Vue.ViewModel<PageViewModel>
 ```
 
 ```HTML
-<vue:App runat="server" id="vm">
+<div id="app">
     Username: <input type="text" v-model="Username" /><br/>
     Password: <input type="password" v-model="Password" /><br/>
     <button type="button" v-on:click="Login()">Login</button>
     <hr/>
     {{ Message }}
-</vue:App>
+</div>
 ```
 
 - Support Vue `Watch` server-side
-- Support Lambda expression to convert to `Computed` javascript 
-- Supports history navigation (ajax page load)
+- Support lambda expression to be converted to `Computed` javascript 
+- Support history navigation (ajax-get) between ASPX pages
+- Support UserControl as Vue.Component
+- Support multi vue instances
+- Support file upload in view model
+- Support MasterPage
+- Works with no `<form runat="server">`
 
-# TODO for next version (to desktop)
-- Implement script factory handler: vue+page+ajaxget+components. Add cache support for production
-- VuePage DLL
-- Nuget :: "VuePage"
+
+# TODO
+- Cache handler
