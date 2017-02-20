@@ -28,6 +28,7 @@ public class PageVM : Vue.ViewModel<PageVM>
 
 - Support Vue `Watch` server-side
 - Support lambda expression to be converted to `Computed` javascript 
+    `Test(x => x.Items.Where(z => z.Done).Count() > 3, "x.Items.filter(function(z) { return z.Done; }).length > 3;");`
 - Support history navigation (ajax-get) between ASPX pages
 - Support UserControl as Vue.Component
 - Support multi vue instances
