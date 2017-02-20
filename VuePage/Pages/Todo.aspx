@@ -45,40 +45,34 @@
     }
 
 </script>
-<html>
-<head runat="server"></head>
-<body runat="server">
+<asp:Content ContentPlaceHolderID="body" runat="server">
 
-    <div id="app">
-        <h1>Todo List</h1><hr />
+    <h1>Todo List</h1><hr />
 
-        <input type="text" v-model="CurrentText" autofocus/>
-        <button v-on:click="Add()" :disabled="!CurrentText" type="button">Add</button>
-        <button v-on:click="Clear()" type="button">Clear</button>
-        <hr />
-        <ul>
-            <li v-for="(Item, i) in Items">
-                <input type="checkbox" v-model="Item.Done" />
-                <span :style="{ 'text-decoration': Item.Done ? 'line-through' : 'none' }" @click="Item.Done = !Item.Done">
-                    {{ Item.Text }}
-                </span>
-                <button v-on:click.prevent="Remove(i)" :disabled="Item.Done" type="submit">X</button>
-            </li>
-        </ul>
-        <hr />
-        Filtrado:
-        <input type="text" v-model="Filtro" />
-        <ul>
-            <li v-for="(Item, i) in Filtrado">{{ Item.Text }}</li>
-        </ul>
+    <input type="text" v-model="CurrentText" autofocus/>
+    <button v-on:click="Add()" :disabled="!CurrentText" type="button">Add</button>
+    <button v-on:click="Clear()" type="button">Clear</button>
+    <hr />
+    <ul>
+        <li v-for="(Item, i) in Items">
+            <input type="checkbox" v-model="Item.Done" />
+            <span :style="{ 'text-decoration': Item.Done ? 'line-through' : 'none' }" @click="Item.Done = !Item.Done">
+                {{ Item.Text }}
+            </span>
+            <button v-on:click.prevent="Remove(i)" :disabled="Item.Done" type="submit">X</button>
+        </li>
+    </ul>
+    <hr />
+    Filtrado:
+    <input type="text" v-model="Filtro" />
+    <ul>
+        <li v-for="(Item, i) in Filtrado">{{ Item.Text }}</li>
+    </ul>
 
 
-        <pre style="border: 1px solid red; padding: 5px; margin: 15px;">{{$data}}</pre>
-        First: {{First}}<br />
-        FirstSelected: {{FirstSelected}}<br />
-        FirstSelected: {{FirstSel}}<br />
+    <pre>{{$data}}</pre>
+    First: {{First}}<br />
+    FirstSelected: {{FirstSelected}}<br />
+    FirstSelected: {{FirstSel}}<br />
 
-    </div>
-
-</body>
-</html>
+</asp:Content>

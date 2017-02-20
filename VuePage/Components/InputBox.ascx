@@ -6,6 +6,7 @@
         [Vue.Prop("Name")]
         public string FirstName { get; set; }
 
+        [Vue.Confirm("Confirm click me?")]
         public void ClickMe()
         {
             JS.Alert(FirstName);

@@ -7,8 +7,12 @@
 
         public CounterVM(HttpContext ctx)
         {
-            Created(() => JS.ConsoleLog("HttpContext works here? " + (ctx != null)));
-            Created(() => Counter = DateTime.Now.Second);
+            Created(() =>
+            {
+                JS.ConsoleLog("HttpContext works here? " + (ctx != null));
+                Counter = DateTime.Now.Second;
+                JS.Code("this.$el.classList.remove('hidden');");
+            });
         }
 
         public void Increment()
@@ -19,4 +23,4 @@
     }
 
 </script>
-<button @click="Increment()">{{ Counter }}</button>
+<button @click="Increment()" class="hidden">{{ Counter }}</button>

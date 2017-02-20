@@ -3,8 +3,8 @@
 
     void Application_Start(object sender, EventArgs e)
     {
-        Vue.Page.Component("inputbox", "~/Components/InputBox.ascx");
-        Vue.Page.Component("counter", "~/Components/Counter.ascx");
+        Vue.Component.Register("inputbox", "~/Components/InputBox.ascx");
+        Vue.Component.Register("counter", "~/Components/Counter.ascx");
     }
 
 </script>

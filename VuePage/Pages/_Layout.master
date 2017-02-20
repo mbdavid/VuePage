@@ -1,0 +1,17 @@
+﻿<%@ Master Language="C#" %>
+<!DOCTYPE html>
+<script runat="server">
+
+</script>
+<html>
+<head runat="server">
+    <link href="_site.css" rel="stylesheet" />
+</head>
+<body runat="server">
+    <a href="/">[ Home ]</a><hr />
+    <div id="app" v-cloak>
+        <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
+    </div>
+    <script src="_addons.js"></script>
+</body>
+</html>

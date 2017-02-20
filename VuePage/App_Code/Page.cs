@@ -17,20 +17,26 @@ namespace Vue
 {
     public class Page : ASP.Page
     {
-        private static Dictionary<string, string> _components = new Dictionary<string, string>();
-
-        #region Properties
-
-        /// <summary>
-        /// Get/Set vue element to render as app
-        /// </summary>
-        public string Element { get; set; } = "#app";
-
-        #endregion
+        private Dictionary<string, Type> _viewModels = new Dictionary<string, Type>();
 
         public Page()
         {
-            Load += (s, e) =>
+            // auto register inner class page viewModel
+            Init += (s, e) =>
+            {
+                var types = this.GetType().GetNestedTypes().Where(x => typeof(IViewModel).IsAssignableFrom(x));
+                
+                foreach(var type in types)
+                {
+                    var el = type.GetCustomAttribute<ElementAttribute>()?.Id ?? "app";
+
+                    if (el.StartsWith("#")) throw new ArgumentException("Vue.Element id could not starts with #");
+
+                    _viewModels[el] = type;
+                }
+            };
+
+            InitComplete += (s, e) =>
             {
                 var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
@@ -53,31 +59,33 @@ namespace Vue
             };
         }
 
+        /// <summary>
+        /// Manual register new view model factory
+        /// </summary>
+        public void RegisterViewModel<T>(string id) where T : IViewModel
+        {
+            if (string.IsNullOrEmpty(id) || id.StartsWith("#")) throw new ArgumentException("ID element could not be null or starts with #");
+
+            _viewModels.Add(id, typeof(T));
+        }
+
         private void RegisterScripts()
         {
             // register vue/vue-page scripts
-            Header.Controls.Add(new ASP.LiteralControl("\n<script src='/Scripts/vue.js'></script>\n"));
-            Header.Controls.Add(new ASP.LiteralControl("<script src='/Scripts/vue-page.js'></script>\n"));
-            Header.Controls.Add(new ASP.LiteralControl("<script src='/Scripts/vue-ajaxget.js'></script>\n"));
-
-            // register vue/components
-            foreach (var key in _components.Keys)
-            {
-                // load control and get viewModel + template
-                var control = LoadControl(_components[key]);
-
-                var vm = LoadViewModel(control);
-                var template = GetTemplate(control);
-
-                // include each component in page inital
-                Header.Controls.Add(new ASP.LiteralControl("<script>\n" + vm.RenderComponent(key, template) + "\n</script>\n"));
-            }
+            Header.Controls.Add(new ASP.LiteralControl("\n<script src=\"/Scripts/vue.js\"></script>\n"));
+            Header.Controls.Add(new ASP.LiteralControl("<script src=\"/Scripts/vue-page.js\"></script>\n"));
+            Header.Controls.Add(new ASP.LiteralControl("<script src=\"/Scripts/vue-ajaxget.js\"></script>\n"));
+            Header.Controls.Add(new ASP.LiteralControl("<script src=\"VueHandler.ashx\"></script>\n"));
         }
 
         private void RegisterInitialize()
         {
+            var controls = Master != null ?
+                Master.Controls.Cast<ASP.Control>() :
+                Controls.Cast<ASP.Control>();
+
             // get body html control
-            var body = Controls.Cast<ASP.Control>()
+            var body = controls
                 .Where(x => x is HtmlGenericControl)
                 .Select(x => x as HtmlGenericControl)
                 .Where(x => x.TagName == "body")
@@ -85,11 +93,14 @@ namespace Vue
 
             if (body == null) throw new ArgumentException("Tag body run be runat=\"server\"");
 
-            // load viewModel from Page
-            var vmp = LoadViewModel(this);
+            foreach(var el in _viewModels.Keys)
+            {
+                // load viewModel from Page
+                var vm = ViewModelFactory.Load(_viewModels[el], Context);
 
-            // initialize vue instance
-            body.Controls.Add(new ASP.LiteralControl("<script>\n" + vmp.RenderInitialize(Element) + "\n</script>"));
+                // initialize vue instance
+                body.Controls.Add(new ASP.LiteralControl("<script>\n" + vm.RenderInitialize(el) + "\n</script>"));
+            }
         }
 
         private void UpdateModel()
@@ -100,10 +111,10 @@ namespace Vue
             var parameters = JArray.Parse(Request.Form["_params"]).ToArray();
             var files = Request.Files.GetMultiple("_files");
 
-            // load viewModel from control or from page
-            var vm = name == null ?
-                LoadViewModel(this) :
-                LoadViewModel(LoadControl(_components[name]));
+            // load viewModel
+            var vm = name.StartsWith("#") ?
+                ViewModelFactory.Load(_viewModels[name.Substring(1)], Context) :
+                ViewModelFactory.Load(Component.All[name].ViewModelType, Context);
 
             // update model, execute server method and return model changes
             var update = vm.UpdateModel(model, method, parameters, files);
@@ -113,35 +124,6 @@ namespace Vue
             Response.ContentType = "text/json";
             Response.Write(update);
             Response.End();
-        }
-
-        private IViewModel LoadViewModel(ASP.Control control)
-        {
-            var viewModelType = control.GetType().GetNestedTypes().FirstOrDefault(x => typeof(IViewModel).IsAssignableFrom(x));
-
-            if (viewModelType == null) throw new ApplicationException("ViewModel class not found in " + control.GetType().FullName);
-
-            var ctor = viewModelType.GetConstructors().First();
-            var parameters = new List<object>();
-
-            // commom ctor parameters
-            foreach(var par in ctor.GetParameters())
-            {
-                if (par.ParameterType == typeof(HttpContext)) parameters.Add(Context);
-                else if (par.ParameterType == typeof(HttpRequest)) parameters.Add(Context.Request);
-                else if (par.ParameterType == typeof(HttpResponse)) parameters.Add(Context.Response);
-                else if (par.ParameterType == typeof(NameValueCollection)) parameters.Add(Context.Request.Params);
-                else if (typeof(IPrincipal).IsAssignableFrom(par.ParameterType)) parameters.Add(Context.User);
-                else if (typeof(Page).IsAssignableFrom(par.ParameterType)) parameters.Add(this.Page);
-                else throw new SystemException("ViewModel contains unknown ctor parameter: " + par.Name);
-            }
-
-            return (IViewModel)Activator.CreateInstance(viewModelType, parameters.ToArray());
-        }
-
-        public static void Component(string name, string url)
-        {
-            _components[name] = url;
         }
 
         private string GetTemplate(ASP.Control control)

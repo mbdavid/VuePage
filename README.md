@@ -31,8 +31,6 @@ public class PageViewModel : Vue.ViewModel<PageViewModel>
 - Supports history navigation (ajax page load)
 
 # TODO for next version (to desktop)
-- Remove page slide effect
-- Support multi-server-componentes
-- AjaxGet render all body content
-- Need works with aspnet web controls (normal postback)
-
+- Implement script factory handler: vue+page+ajaxget+components. Add cache support for production
+- VuePage DLL
+- Nuget :: "VuePage"

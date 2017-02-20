@@ -25,30 +25,23 @@
     }
 
 </script>
-<html>
-<head runat="server"></head>
-<body runat="server">
+<asp:Content ContentPlaceHolderID="body" runat="server">
 
-    <div id="app">
+    <h1>Upload</h1><hr />
 
-        <h1>Upload</h1><hr />
+    <fieldset>
+        <legend>Single File</legend>
+        <input type="file" id="f1" />
+        <button type="button" @click="UploadSingleFile('u1', '#f1')">Upload file</button>
+    </fieldset>
 
-        <fieldset>
-            <legend>Single File</legend>
-            <input type="file" id="f1" />
-            <button type="button" @click="UploadSingleFile('u1', '#f1')">Upload file</button>
-        </fieldset>
+    <fieldset>
+        <legend>Multi File</legend>
+        <input type="file" multiple="multiple" />
+        <button type="button" @click="UploadMultipleFiles('u2', '[multiple]')">Upload files</button>
+    </fieldset>
 
-        <fieldset>
-            <legend>Multi File</legend>
-            <input type="file" multiple="multiple" />
-            <button type="button" @click="UploadMultipleFiles('u2', '[multiple]')">Upload files</button>
-        </fieldset>
+    <button type="button" @click="NoUpload()">NoUpload</button>
+    <button type="button" @click="UploadAny('input[type=file]')">Upload from Any</button>
 
-        <button type="button" @click="NoUpload()">NoUpload</button>
-        <button type="button" @click="UploadAny('input[type=file]')">Upload from Any</button>
-
-    </div>
-
-</body>
-</html>
+</asp:Content>

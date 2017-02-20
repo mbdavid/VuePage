@@ -25,31 +25,23 @@
     }
 
 </script>
-<html>
-<head runat="server"></head>
-<body runat="server">
+<asp:Content ContentPlaceHolderID="body" runat="server">
 
-    <div id="app">
+    <h1>Components</h1><hr />
 
-        <h1>Components</h1><hr />
+    <input type="text" v-model="Name" />
+    <button @click="ShowName()">ShowName</button>
+    <hr />
+    Clicks: {{ Total }}
+    <counter v-for="i in Buttons" @inc="IncrementTotal()"></counter>
+    <br />
+    <button @click="Buttons++">+</button>
+    <button @click="Buttons--">-</button>
+    <hr />
+    <pre>{{$data}}</pre>
 
-        <input type="text" v-model="Name" />
-        <button @click="ShowName()">ShowName</button>
-        <hr />
-        Clicks: {{ Total }}
-        <counter v-for="i in Buttons" @inc="IncrementTotal()"></counter>
-        <br />
-        <button @click="Buttons++">+</button>
-        <button @click="Buttons--">-</button>
-        <hr />
-        <pre>{{$data}}</pre>
+    <inputbox Name="Initial value"></inputbox>
+    <hr />
+    <inputbox Name="Mauricio"></inputbox>
 
-        <inputbox Name="Initial value"></inputbox>
-        <hr />
-        <inputbox Name="Mauricio"></inputbox>
-        <hr />
-
-    </div>
-
-</body>
-</html>
+</asp:Content>

@@ -32,29 +32,22 @@
     }
 
 </script>
-<html>
-<head runat="server"></head>
-<body runat="server">
+<asp:Content ContentPlaceHolderID="body" runat="server">
 
-    <div id="app">
+    <h1>Watch</h1><hr />
 
-        <h1>Watch</h1><hr />
+    Brand:
+    <select v-model="BrandSelected">
+        <option v-for="option in Brands" :value="option">{{ option }}</option>
+    </select>
+    - Selected: {{ BrandSelected }}
+    <br /><br />
+    Model:
+    <select v-model="ModelSelected">
+        <option v-for="option in Models" :value="option.Key">{{ option.Value }}</option>
+    </select>
+    - Selected: {{ ModelSelected }}
+    <hr />
+    <button @click.prevent="ShowSelected()">ShowSelected</button>
 
-        Brand:
-        <select v-model="BrandSelected">
-            <option v-for="option in Brands" :value="option">{{ option }}</option>
-        </select>
-        - Selected: {{ BrandSelected }}
-        <br /><br />
-        Model:
-        <select v-model="ModelSelected">
-            <option v-for="option in Models" :value="option.Key">{{ option.Value }}</option>
-        </select>
-        - Selected: {{ ModelSelected }}
-        <hr />
-        <button @click.prevent="ShowSelected()">ShowSelected</button>
-
-    </div>
-
-</body>
-</html>
+</asp:Content>

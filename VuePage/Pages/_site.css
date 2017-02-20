@@ -1,0 +1,22 @@
+﻿[v-cloak], .hidden {
+    display: none;
+}
+.is-loading { 
+    position: relative;
+}
+.is-loading:before {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    background-color: rgba(255, 0, 0, .5);
+    content: ' ';
+}
+
+#app, #app1, #app2, #app3 {
+    border: 1px solid blue;
+    padding: 5px;
+    margin: 5px 0px;
+}
+
+pre {
+    background-color: #dedede;
+}

@@ -6,8 +6,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Vue
 {
+    /// <summary>
+    /// Define javascript code before call $server() method
+    /// </summary>
     public class ScriptAttribute : Attribute
     {
+        /// <summary>
+        /// Execute script before call $server() method
+        /// </summary>
         public ScriptAttribute(string code)
         {
             Code = code;
@@ -24,10 +30,26 @@ namespace Vue
         }
     }
 
+    /// <summary>
+    /// Define ViewModel id element in page level view model
+    /// </summary>
+    public class ElementAttribute : Attribute
+    {
+        public string Id { get; set; }
+
+        public ElementAttribute(string id)
+        {
+            Id = id;
+        }
+    }
+
     public class PropAttribute : Attribute
     {
         public string Name { get; set; }
 
+        /// <summary>
+        /// Define name for this property (do not use same name as variable)
+        /// </summary>
         public PropAttribute(string name)
         {
             Name = name;

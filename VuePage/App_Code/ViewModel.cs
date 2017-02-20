@@ -117,7 +117,8 @@ namespace Vue
             var writer = new StringBuilder();
 
             writer.AppendLine("new Vue({");
-            writer.AppendFormat("  el: '{0}',\n", el);
+            writer.AppendFormat("  el: '#{0}',\n", el);
+            writer.AppendFormat("  name: '#{0}',\n", el);
 
             writer.AppendLine("  created: function() {");
             writer.AppendLine("     this.$registerPageVM(this);");
@@ -137,7 +138,10 @@ namespace Vue
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                 .Where(x => x.GetCustomAttribute<PropAttribute>() != null)
                 .Select(x => new { Prop = x.GetCustomAttribute<PropAttribute>().Name, Name = x.Name })
-                .ToArray();
+                .ToList();
+
+            // checks if prop name are different from viewmodel field
+            props.ForEach((x) => { if(x.Name == x.Prop) throw new ArgumentException("Vue.Prop name must be different from view model property"); });
 
             writer.AppendFormat("Vue.component('{0}', {{\n", name);
             writer.AppendFormat("  name: '{0}',\n", name);
@@ -303,5 +307,6 @@ namespace Vue
         }
 
         #endregion
+
     }
 }
