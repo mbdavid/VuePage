@@ -14,12 +14,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Vue
 {
-    public class ViewModel<T> : IViewModel
+    public class ViewModel
     {
         private Javascript _js = new Javascript();
-        private List<Action> _created = new List<Action>();
         private Dictionary<string, string> _computed = new Dictionary<string, string>();
-        private Dictionary<string, Action<object, object>> _watch = new Dictionary<string, Action<object, object>>();
         private JsonSerializerSettings _serializeSettings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Include,
@@ -35,63 +33,17 @@ namespace Vue
         #region Created
 
         /// <summary>
-        /// Register created server event
+        /// In page call during initialize. In component, made ajax call when component are created
         /// </summary>
-        protected void Created(Action action)
+        public virtual void Created()
         {
-            _created.Add(action);
-        }
-
-        /// <summary>
-        /// Execute called event from client
-        /// </summary>
-        protected void OnCreated()
-        {
-            foreach(var action in _created)
-            {
-                action();
-            }
-        }
-
-        #endregion
-
-        #region Watch
-
-        protected virtual void NotifyWatch(string name, object value, object oldValue)
-        {
-            Action<object, object> action;
-
-            if(_watch.TryGetValue(name, out action))
-            {
-                action(value, oldValue);
-            }
-        }
-
-        protected void Watch<K>(Expression<Func<T, K>> expr, Action<K, K> action)
-        {
-            _watch.Add(expr.KeyPath(), (n, o) => action((K)Convert.ChangeType(n, typeof(K)), (K)Convert.ChangeType(o, typeof(K))));
-        }
-
-        protected void Watch<K>(Expression<Func<T, K>> expr, Action<K> action)
-        {
-            _watch.Add(expr.KeyPath(), (n, o) => action((K)Convert.ChangeType(n, typeof(K))));
-        }
-
-        protected void Watch<K>(Expression<Func<T, K>> expr, Action action)
-        {
-            _watch.Add(expr.KeyPath(), (n, o) => action());
-        }
-
-        protected void Watch(string keyPath, Action<object, object> action)
-        {
-            _watch.Add(keyPath, action);
         }
 
         #endregion
 
         #region Computed
 
-        protected void Computed(string key, Expression<Func<T, object>> expr)
+        protected void Computed<T>(string key, Expression<Func<T, object>> expr)
         {
             var v = new JsExpressionVisitor();
             v.Visit(expr);
@@ -112,7 +64,7 @@ namespace Vue
         public virtual string RenderInitialize(string el)
         {
             // created event are called when render initilize
-            OnCreated();
+            Created();
 
             var writer = new StringBuilder();
 
@@ -152,9 +104,12 @@ namespace Vue
             writer.Append(string.Join("\n", props.Select(x => string.Format("    this.{0} = this.{1};", x.Name, x.Prop))));
             writer.AppendLine(_js.ToString());
 
-            if(_created != null)
+            // only call Created method if created was override in component
+            var created = GetType().GetMethod("Created");
+
+            if(created.GetBaseDefinition().DeclaringType != created.DeclaringType)
             {
-                writer.AppendLine("    this.$server('OnCreated', [], null, this);");
+                writer.AppendLine("    this.$server('Created', [], null, this);");
             }
 
             writer.AppendLine("  },");
@@ -215,10 +170,18 @@ namespace Vue
             writer.AppendLine("  },");
             writer.AppendLine("  watch: {");
 
-            foreach(var w in _watch.Keys)
+            // get all method marked with [Watch] attribute or ends with _Watch
+            var watchs = this.GetType()
+                .GetMethods(BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(x => x.Name.EndsWith("_Watch", StringComparison.InvariantCultureIgnoreCase) || x.GetCustomAttribute<WatchAttribute>() != null)
+                .ToArray();
+
+            foreach (var w in watchs)
             {
-                writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{ this.$server('NotifyWatch', ['{0}', v, o], null, this); }},\n      deep: true\n    }},\n", 
-                    w);
+                var name = w.GetCustomAttribute<WatchAttribute>()?.Name ?? w.Name.Substring(0, w.Name.LastIndexOf("_"));
+
+                writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{ this.$server('{1}', [v, o], null, this); }},\n      deep: true\n    }},\n", 
+                    name, w.Name);
             }
 
             writer.Length -= 2;
@@ -243,9 +206,11 @@ namespace Vue
 
         protected virtual void ExecuteMethod(string name, JToken[] parameters, IList<HttpPostedFile> files)
         {
-            var method = this.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            var method = this.GetType().GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
             var pars = new List<object>();
             var index = 0;
+
+            if (method == null) throw new ArgumentNullException("Method " + name + " not found on " + this.GetType().Name + " view model or are not instance public method");
 
             foreach (var p in method.GetParameters())
             {

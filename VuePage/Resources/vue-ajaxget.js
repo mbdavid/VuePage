@@ -23,7 +23,7 @@
 
         var url = resolveUrl(href);
 
-        console.log('Navigate to page: ' + url);
+        log('$navigate: ' + url);
 
         // if navToPage came from Back button, do not push state
         if (location.href != url) {
@@ -147,4 +147,10 @@
             try { focus.focus(); } catch (e) { }
         }, 1);
     }
+
+    // execute console log without showing file
+    function log() {
+        setTimeout(console.log.bind(console, arguments[0], arguments[1] || ''));
+    }
+
 })();

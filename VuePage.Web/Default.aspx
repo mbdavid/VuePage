@@ -1,18 +1,15 @@
 ﻿<%@ Page Language="C#" Title="Home" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel<PageVM>
+    public class PageVM : Vue.ViewModel
     {
         public List<string> Files { get; set; }
         public bool Show { get; set; } = true;
 
         public PageVM(HttpContext ctx)
         {
-            Created(() =>
-            {
-                var files = System.IO.Directory.GetFiles(ctx.Server.MapPath("~/Pages"), "*.aspx");
-                this.Files = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
-            });
+            var files = System.IO.Directory.GetFiles(ctx.Server.MapPath("~/Pages"), "*.aspx");
+            this.Files = new List<string>(files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)));
         }
     }
 

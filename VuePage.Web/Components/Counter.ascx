@@ -1,18 +1,19 @@
 ﻿<%@ Control Language="C#" ClassName="Counter" %>
 <script runat="server">
 
-    public class CounterVM : Vue.ViewModel<CounterVM>
+    public class CounterVM : Vue.ViewModel
     {
         public int Counter { get; set; }
 
         public CounterVM(HttpContext ctx)
         {
-            Created(() =>
-            {
-                JS.ConsoleLog("HttpContext works here? " + (ctx != null));
-                Counter = DateTime.Now.Second;
-                JS.Code("this.$el.classList.remove('hidden');");
-            });
+        }
+
+        public override void Created()
+        {
+            //JS.ConsoleLog("HttpContext works here? " + (ctx != null));
+            Counter = DateTime.Now.Second;
+            JS.Code("this.$el.classList.remove('hidden');");
         }
 
         public void Increment()

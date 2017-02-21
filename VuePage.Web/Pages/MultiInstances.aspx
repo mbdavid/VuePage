@@ -2,13 +2,13 @@
 <script runat="server">
 
     [Vue.Element("app1")]
-    public class Page1VM : Vue.ViewModel<Page1VM>
+    public class Page1VM : Vue.ViewModel
     {
         public string Text { get; set; } = "Initial 1";
     }
 
     [Vue.Element("app2")]
-    public class Page2VM : Vue.ViewModel<Page2VM>
+    public class Page2VM : Vue.ViewModel
     {
         public string Text { get; set; } = "Initial 2";
 
@@ -19,7 +19,7 @@
     }
 
     [Vue.Element("app3")]
-    public class Page3VM : Vue.ViewModel<Page3VM>
+    public class Page3VM : Vue.ViewModel
     {
         public string Text { get; set; } = "John Doe 3";
     }

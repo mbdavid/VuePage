@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" ClassName="InputBox" %>
 <script runat="server">
 
-    public class InputBoxVM : Vue.ViewModel<InputBox>
+    public class InputBoxVM : Vue.ViewModel
     {
         [Vue.Prop("Name")]
         public string FirstName { get; set; }

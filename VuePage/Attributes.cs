@@ -55,4 +55,17 @@ namespace Vue
             Name = name;
         }
     }
+
+    public class WatchAttribute : Attribute
+    {
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Define variable name to subscribe for changes
+        /// </summary>
+        public WatchAttribute(string name)
+        {
+            Name = name;
+        }
+    }
 }

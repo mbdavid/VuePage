@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" Title="Page 1" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel<PageVM>
+    public class PageVM : Vue.ViewModel
     {
         public List<string> Brands { get; set; }
         public List<KeyValuePair<int, string>> Models { get; set; }
@@ -12,17 +12,23 @@
         public PageVM()
         {
             Brands = new List<string>() { "BMW", "Ford", "Mercedes" };
+        }
 
-            Watch(x => x.BrandSelected, (v, o) =>
+        public void BrandSelected_Watch(string value, string old)
+        {
+            Models = new List<KeyValuePair<int, string>>
             {
-                Models = new List<KeyValuePair<int, string>>
-                {
-                    new KeyValuePair<int, string>(1, v + " - Model 1 (old " + o + ")"),
-                    new KeyValuePair<int, string>(2, v + " - Model 2 (old " + o + ")"),
-                    new KeyValuePair<int, string>(3, v + " - Model 3 (old " + o + ")")
-                };
-                ModelSelected = null;
-            });
+                new KeyValuePair<int, string>(1, value + " - Model 1 (old " + old + ")"),
+                new KeyValuePair<int, string>(2, value + " - Model 2 (old " + old + ")"),
+                new KeyValuePair<int, string>(3, value + " - Model 3 (old " + old + ")")
+            };
+            ModelSelected = null;
+        }
+
+        [Vue.Watch("ModelSelected")]
+        public void ModelChanged()
+        {
+            JS.Alert("Model changed");
         }
 
         public void ShowSelected()

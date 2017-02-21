@@ -19,7 +19,7 @@ namespace Vue
         /// <summary>
         /// Create new instance based on ViewModel type
         /// </summary>
-        public static IViewModel Load(Type viewModelType, HttpContext context)
+        public static ViewModel Load(Type viewModelType, HttpContext context)
         {
             var ctor = viewModelType.GetConstructors().First();
             var parameters = new List<object>();
@@ -35,7 +35,7 @@ namespace Vue
                 else throw new SystemException("ViewModel contains unknown ctor parameter: " + par.Name);
             }
 
-            return (IViewModel)Activator.CreateInstance(viewModelType, parameters.ToArray());
+            return (ViewModel)Activator.CreateInstance(viewModelType, parameters.ToArray());
         }
     }
 }

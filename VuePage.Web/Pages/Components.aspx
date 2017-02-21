@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" Title="Home" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel<PageVM>
+    public class PageVM : Vue.ViewModel
     {
         public int Buttons { get; set; } = 2;
         public int Total { get; set; }
@@ -9,7 +9,11 @@
 
         public PageVM()
         {
-            Created(() => Name = DateTime.Now.Second.ToString());
+        }
+
+        public override void Created()
+        {
+            Name = DateTime.Now.Second.ToString();
         }
 
         public void IncrementTotal()

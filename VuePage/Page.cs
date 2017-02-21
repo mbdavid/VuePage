@@ -24,7 +24,7 @@ namespace Vue
             // auto register inner class page viewModel
             Init += (s, e) =>
             {
-                var types = this.GetType().GetNestedTypes().Where(x => typeof(IViewModel).IsAssignableFrom(x));
+                var types = this.GetType().GetNestedTypes().Where(x => typeof(ViewModel).IsAssignableFrom(x));
                 
                 foreach(var type in types)
                 {
@@ -62,7 +62,7 @@ namespace Vue
         /// <summary>
         /// Manual register new view model factory
         /// </summary>
-        public void RegisterViewModel<T>(string id) where T : IViewModel
+        public void RegisterViewModel<T>(string id) where T : ViewModel
         {
             if (string.IsNullOrEmpty(id) || id.StartsWith("#")) throw new ArgumentException("ID element could not be null or starts with #");
 

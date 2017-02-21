@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" Title="Todo" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel<PageVM>
+    public class PageVM : Vue.ViewModel
     {
         public string CurrentText { get; set; } = "";
         public string Filtro { get; set; } = "";
@@ -9,15 +9,14 @@
 
         public PageVM()
         {
-            Computed("First", x => x.Items.Count == 0 ? "[none]" : x.Items[0].Text);
-            Computed("FirstSelected", x => x.Items.Where(z => z.Done).Count() == 0 ? "[none]" : x.Items.Where(z => z.Done).First().Text);
-            Computed("FirstSel", x => x.Items.First(z => z.Done));
+            Computed<PageVM>("First", x => x.Items.Count == 0 ? "[none]" : x.Items[0].Text);
+            Computed<PageVM>("FirstSelected", x => x.Items.Where(z => z.Done).Count() == 0 ? "[none]" : x.Items.Where(z => z.Done).First().Text);
+            Computed<PageVM>("FirstSel", x => x.Items.First(z => z.Done));
+            Computed<PageVM>("Filtrado", x => x.Items.Where(z => z.Text.Contains(x.Filtro)));
 
             // Initial values (will be replaced when post)
             Items.Add(new Todo { Text = "My first demo" });
             Items.Add(new Todo { Text = "Was done", Done = true });
-
-            Computed("Filtrado", x => x.Items.Where(z => z.Text.Contains(x.Filtro)));
         }
 
         public void Add()

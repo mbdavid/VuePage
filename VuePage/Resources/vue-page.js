@@ -75,12 +75,12 @@
 
                     Object.keys(update).forEach(function (key) {
                         var value = update[key];
-                        console.log('  $data["' + key + '"] = ', value);
+                        log('>  $data["' + key + '"] = ', value);
                         request.vm.$data[key] = value;
                     });
 
                     if (js) {
-                        console.log('  Eval = ', response['js']);
+                        log('>  $eval = ', response['js']);
                         setTimeout(function () {
                             new Function(js).call(request.vm);
                         })
@@ -106,12 +106,12 @@
                     files.forEach(function (file) {
                         for (var i = 0; i < file.files.length; i++) {
                             form.append('_files', file.files[i]);
-                            console.log('Uploading ("' + file.files[i].name + ')... ' + file.files[i].size);
+                            log('$upload ("' + file.files[i].name + '")... ', file.files[i].size);
                         }
                     });
                 }
 
-                console.log('Execute ("' + request.name + '") = ', request.params);
+                log('$server ("' + request.name + '") = ', request.params);
 
                 xhr.open('POST', location.href, true);
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -159,6 +159,11 @@
                 handle.state = 'stop';
             });
         }
+    }
+
+    // execute console log without showing file: http://stackoverflow.com/questions/34762774/how-to-hide-source-of-log-messages-in-console
+    function log() {
+        setTimeout(console.log.bind(console, arguments[0], arguments[1] || ''));
     }
 
 })();
