@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" Title="Page 1" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel
+    public class PageVM : ViewModel
     {
         public List<string> Brands { get; set; }
         public List<KeyValuePair<int, string>> Models { get; set; }
@@ -25,7 +25,7 @@
             ModelSelected = null;
         }
 
-        [Vue.Watch("ModelSelected")]
+        [Watch("ModelSelected")]
         public void ModelChanged()
         {
             JS.Alert("Model changed");

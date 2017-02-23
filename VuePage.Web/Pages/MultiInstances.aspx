@@ -1,13 +1,13 @@
 ﻿<%@ Page Language="C#" Title="Page 1" %>
 <script runat="server">
 
-    [Vue.Element("app1")]
+    [Element("app1")]
     public class Page1VM : Vue.ViewModel
     {
         public string Text { get; set; } = "Initial 1";
     }
 
-    [Vue.Element("app2")]
+    [Element("app2")]
     public class Page2VM : Vue.ViewModel
     {
         public string Text { get; set; } = "Initial 2";
@@ -18,7 +18,7 @@
         }
     }
 
-    [Vue.Element("app3")]
+    [Element("app3")]
     public class Page3VM : Vue.ViewModel
     {
         public string Text { get; set; } = "John Doe 3";

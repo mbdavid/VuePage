@@ -11,24 +11,41 @@ using System.Web;
 using System.Web.UI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Vue
 {
     public class ViewModel
     {
-        private Javascript _js = new Javascript();
-        private Dictionary<string, string> _computed = new Dictionary<string, string>();
+        private JavascriptBuilder _js = new JavascriptBuilder();
         private JsonSerializerSettings _serializeSettings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Include,
-            ObjectCreationHandling = ObjectCreationHandling.Replace
+            ObjectCreationHandling = ObjectCreationHandling.Replace,
+            ContractResolver = VueContractResolver.Instance
         };
 
-        protected Javascript JS { get { return _js; } }
+        protected JavascriptBuilder JS { get { return _js; } }
 
         public ViewModel()
         {
         }
+
+        #region Computed
+
+        /// <summary>
+        /// Resolve an expression to convert into a computed field
+        /// </summary>
+        public static Computed Resolve<T>(Expression<Func<T, object>> expr) where T : ViewModel
+        {
+            return new Computed
+            {
+                Code = JavascriptExpressionVisitor.Resolve(expr),
+                Value = (object o) => expr.Compile()
+            };
+        }
+
+        #endregion
 
         #region Created
 
@@ -37,24 +54,6 @@ namespace Vue
         /// </summary>
         public virtual void Created()
         {
-        }
-
-        #endregion
-
-        #region Computed
-
-        protected void Computed<T>(string key, Expression<Func<T, object>> expr)
-        {
-            var v = new JsExpressionVisitor();
-            v.Visit(expr);
-            var js = "return (" + v.JavaScriptCode + ")(this);";
-
-            _computed.Add(key, js);
-        }
-
-        protected void Computed(string key, string jsExpression)
-        {
-            _computed.Add(key, "return " + jsExpression + ";");
         }
 
         #endregion
@@ -93,7 +92,7 @@ namespace Vue
                 .ToList();
 
             // checks if prop name are different from viewmodel field
-            props.ForEach((x) => { if(x.Name == x.Prop) throw new ArgumentException("Vue.Prop name must be different from view model property"); });
+            props.ForEach((x) => { if(x.Name == x.Prop) throw new ArgumentException("[Vue.Prop] name must be different from view model property"); });
 
             writer.AppendFormat("Vue.component('{0}', {{\n", name);
             writer.AppendFormat("  name: '{0}',\n", name);
@@ -158,11 +157,14 @@ namespace Vue
             writer.AppendLine("  },");
             writer.AppendLine("  computed: {");
 
-            foreach (var c in _computed)
+            var computed = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => x.FieldType == typeof(Computed));
+
+            foreach (var c in computed)
             {
-                writer.AppendFormat("    '{0}': function() {{\n      {1}\n    }},\n",
-                    c.Key,
-                    c.Value);
+                writer.AppendFormat("    '{0}': function() {{\n      return ({1})(this);\n    }},\n",
+                    c.Name,
+                    ((Computed)c.GetValue(this)).Code);
             }
 
             writer.Length -= 2;
@@ -195,7 +197,7 @@ namespace Vue
 
         #region Update Model
 
-        public virtual string UpdateModel(string model, string method, JToken[] parameters, IList<HttpPostedFile> files)
+        internal string UpdateModel(string model, string method, JToken[] parameters, IList<HttpPostedFile> files)
         {
             JsonConvert.PopulateObject(model, this, _serializeSettings);
 
@@ -204,7 +206,7 @@ namespace Vue
             return RenderUpdate(model);
         }
 
-        protected virtual void ExecuteMethod(string name, JToken[] parameters, IList<HttpPostedFile> files)
+        private void ExecuteMethod(string name, JToken[] parameters, IList<HttpPostedFile> files)
         {
             var method = this.GetType().GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
             var pars = new List<object>();
@@ -241,13 +243,21 @@ namespace Vue
                 }
             }
 
-            method.Invoke(this, pars.ToArray());
+            OnExecuteMethod(method, pars.ToArray());
         }
 
-        protected string RenderUpdate(string model)
+        /// <summary>
+        /// Call viewmodel method using paramters from client
+        /// </summary>
+        protected virtual void OnExecuteMethod(MethodInfo method, object[] args)
+        {
+            method.Invoke(this, args);
+        }
+
+        private string RenderUpdate(string model)
         {
             var original = JObject.Parse(model);
-            var current = JObject.FromObject(this);
+            var current = JObject.FromObject(this, new JsonSerializer { ContractResolver = VueContractResolver.Instance });
             var diff = new JObject();
 
             foreach (var item in current)
@@ -269,6 +279,32 @@ namespace Vue
             };
 
             return output.ToString();
+        }
+
+        #endregion
+
+        #region Factory Instance
+
+        /// <summary>
+        /// Create new instance based on ViewModel type
+        /// </summary>
+        internal static ViewModel Load(Type viewModelType, HttpContext context)
+        {
+            var ctor = viewModelType.GetConstructors().First();
+            var parameters = new List<object>();
+
+            // commom ctor parameters
+            foreach (var par in ctor.GetParameters())
+            {
+                if (par.ParameterType == typeof(HttpContext)) parameters.Add(context);
+                else if (par.ParameterType == typeof(HttpRequest)) parameters.Add(context.Request);
+                else if (par.ParameterType == typeof(HttpResponse)) parameters.Add(context.Response);
+                else if (par.ParameterType == typeof(NameValueCollection)) parameters.Add(context.Request.Params);
+                else if (typeof(IPrincipal).IsAssignableFrom(par.ParameterType)) parameters.Add(context.User);
+                else throw new SystemException("ViewModel contains unknown ctor parameter: " + par.Name);
+            }
+
+            return (ViewModel)Activator.CreateInstance(viewModelType, parameters.ToArray());
         }
 
         #endregion

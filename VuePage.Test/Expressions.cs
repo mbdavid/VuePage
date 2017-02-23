@@ -84,7 +84,7 @@ namespace VuePage.Test
 
         public static void Test(Expression<Func<VM, object>> expr, string expect)
         {
-            var js = JsExpressionVisitor.Resolve(expr);
+            var js = JavascriptExpressionVisitor.Resolve(expr);
 
             Assert.AreEqual("function(x) { return " + expect + " }", js);
         }

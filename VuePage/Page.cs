@@ -92,12 +92,12 @@ namespace Vue
                 .Where(x => x.TagName == "body")
                 .FirstOrDefault();
 
-            if (body == null) throw new ArgumentException("Tag body run be runat=\"server\"");
+            if (body == null) throw new ArgumentException("Tag <body> must be runat=\"server\"");
 
             foreach(var el in _viewModels.Keys)
             {
                 // load viewModel from Page
-                var vm = ViewModelFactory.Load(_viewModels[el], Context);
+                var vm = ViewModel.Load(_viewModels[el], Context);
 
                 // initialize vue instance
                 body.Controls.Add(new ASP.LiteralControl("<script>\n" + vm.RenderInitialize(el) + "\n</script>"));
@@ -114,8 +114,8 @@ namespace Vue
 
             // load viewModel
             var vm = name.StartsWith("#") ?
-                ViewModelFactory.Load(_viewModels[name.Substring(1)], Context) :
-                ViewModelFactory.Load(Component.All[name].ViewModelType, Context);
+                ViewModel.Load(_viewModels[name.Substring(1)], Context) :
+                ViewModel.Load(Component.All[name].ViewModelType, Context);
 
             // update model, execute server method and return model changes
             var update = vm.UpdateModel(model, method, parameters, files);
@@ -125,23 +125,6 @@ namespace Vue
             Response.ContentType = "text/json";
             Response.Write(update);
             Response.End();
-        }
-
-        private string GetTemplate(ASP.Control control)
-        {
-            var sb = new StringBuilder();
-
-            using (var sw = new StringWriter(sb))
-            {
-                using (var w = new ASP.HtmlTextWriter(sw))
-                {
-                    control.RenderControl(w);
-                }
-            }
-
-            return sb.ToString().Trim().Replace("\n", "\\n")
-                .Replace("\r", "\\r")
-                .Replace("'", "\\'");
         }
     }
 }

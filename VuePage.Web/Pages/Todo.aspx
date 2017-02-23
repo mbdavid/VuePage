@@ -1,19 +1,19 @@
 ﻿<%@ Page Language="C#" Title="Todo" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel
+    public class PageVM : ViewModel
     {
         public string CurrentText { get; set; } = "";
         public string Filtro { get; set; } = "";
         public List<Todo> Items { get; set; } = new List<Todo>();
 
+        public Computed First = Resolve<PageVM>(x => x.Items.Count == 0 ? "[none]" : x.Items[0].Text);
+        public Computed FirstSelected = Resolve<PageVM>(x => x.Items.Where(z => z.Done).Count() == 0 ? "[none]" : x.Items.Where(z => z.Done).First().Text);
+        public Computed FirstSel = Resolve<PageVM>(x => x.Items.First(z => z.Done));
+        public Computed Filtrado = Resolve<PageVM>(x => x.Items.Where(z => z.Text.Contains(x.Filtro)));
+
         public PageVM()
         {
-            Computed<PageVM>("First", x => x.Items.Count == 0 ? "[none]" : x.Items[0].Text);
-            Computed<PageVM>("FirstSelected", x => x.Items.Where(z => z.Done).Count() == 0 ? "[none]" : x.Items.Where(z => z.Done).First().Text);
-            Computed<PageVM>("FirstSel", x => x.Items.First(z => z.Done));
-            Computed<PageVM>("Filtrado", x => x.Items.Where(z => z.Text.Contains(x.Filtro)));
-
             // Initial values (will be replaced when post)
             Items.Add(new Todo { Text = "My first demo" });
             Items.Add(new Todo { Text = "Was done", Done = true });
@@ -30,7 +30,7 @@
             Items.RemoveAt(index);
         }
 
-        [Vue.Confirm("Clear all items?")]
+        [Confirm("Clear all items?")]
         public void Clear()
         {
             Items.Clear();

@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" Title="Loading" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel
+    public class PageVM : ViewModel
     {
         public void Wait(int s)
         {

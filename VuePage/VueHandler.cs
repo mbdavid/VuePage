@@ -14,7 +14,7 @@ namespace Vue
     /// <summary>
     /// Define javascript code before call $server() method
     /// </summary>
-    public class Handler : IHttpHandler
+    public class VueHandler : IHttpHandler
     {
         public bool IsReusable { get { return true; } }
 
@@ -37,7 +37,7 @@ namespace Vue
                         if (component.ViewModelType == null) throw new ArgumentException("ViewModel not found for component in " + component.Url);
                     }
 
-                    var vm = ViewModelFactory.Load(component.ViewModelType, context);
+                    var vm = ViewModel.Load(component.ViewModelType, context);
                     var template = GetTemplate(control);
 
                     // include each component in page inital

@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" Title="Home" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel
+    public class PageVM : ViewModel
     {
         public int Buttons { get; set; } = 2;
         public int Total { get; set; }

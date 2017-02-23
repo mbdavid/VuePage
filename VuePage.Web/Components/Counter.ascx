@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" ClassName="Counter" %>
 <script runat="server">
 
-    public class CounterVM : Vue.ViewModel
+    public class CounterVM : ViewModel
     {
         public int Counter { get; set; }
 

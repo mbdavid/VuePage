@@ -8,13 +8,13 @@ using System.Web;
 
 namespace Vue
 {
-    public class JsExpressionVisitor : ExpressionVisitor
+    public class JavascriptExpressionVisitor : ExpressionVisitor
     {
         private readonly StringBuilder _builder = new StringBuilder();
 
         public static string Resolve(Expression expr)
         {
-            var v = new JsExpressionVisitor();
+            var v = new JavascriptExpressionVisitor();
             v.Visit(expr);
             return v.JavaScriptCode;
         }

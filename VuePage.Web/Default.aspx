@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" Title="Home" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel
+    public class PageVM : ViewModel
     {
         public List<string> Files { get; set; }
         public bool Show { get; set; } = true;

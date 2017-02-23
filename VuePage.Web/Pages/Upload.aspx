@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" Title="Upload" %>
 <script runat="server">
 
-    public class PageVM : Vue.ViewModel
+    public class PageVM : ViewModel
     {
         public void UploadSingleFile(string n, HttpPostedFile f)
         {

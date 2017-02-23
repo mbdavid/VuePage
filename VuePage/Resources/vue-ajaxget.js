@@ -2,7 +2,7 @@
 
     // register Vue.$loading function
     var _loading = Vue.$loading;
-    var _vm = null;
+    var _vm = [];
 
     // register vue plugin to server call ($navigate & $registerPageVM)
     Vue.use({
@@ -13,7 +13,7 @@
 
             // register page view model (destroy before)
             vue.prototype.$registerPageVM = function (vm) {
-                _vm = vm;
+                _vm.push(vm);
             }
         }
     });
@@ -49,8 +49,9 @@
             var title = (/<title[^>]*>([\s\S]*)<\/title>/gm.exec(html) || [null, ''])[1];
             var tags = re.exec(response);
 
-            // destroy old vm
-            _vm.$destroy();
+            // destroy all old vms
+            _vm.forEach(function (vm) { vm.$destroy(); });
+            _vm = [];
 
             // set new page content
             document.body.innerHTML = body;

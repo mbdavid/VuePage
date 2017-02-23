@@ -1,12 +1,12 @@
 ﻿<%@ Control Language="C#" ClassName="InputBox" %>
 <script runat="server">
 
-    public class InputBoxVM : Vue.ViewModel
+    public class InputBoxVM : ViewModel
     {
-        [Vue.Prop("Name")]
+        [Prop("Name")]
         public string FirstName { get; set; }
 
-        [Vue.Confirm("Confirm click me?")]
+        [Confirm("Confirm click me?")]
         public void ClickMe()
         {
             JS.Alert(FirstName);
