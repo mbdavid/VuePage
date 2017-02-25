@@ -19,6 +19,8 @@ namespace Vue
     {
         private Dictionary<string, Type> _viewModels = new Dictionary<string, Type>();
 
+        private ASP.Control _script = null;
+
         public Page()
         {
             // auto register inner class page viewModel
@@ -47,8 +49,21 @@ namespace Vue
                 }
                 else
                 {
+                    var controls = Master != null ?
+                        Master.Controls.Cast<ASP.Control>() :
+                        Controls.Cast<ASP.Control>();
+
+                    // find script placeholder (body runat=server, div#id=vuescript, [class=vue-script])
+                    _script = controls
+                        .Where(x => x is HtmlGenericControl)
+                        .Select(x => x as HtmlGenericControl)
+                        .Where(x => x.TagName == "body" || x.ID == "vuescript" || (x.Attributes["class"]?.Contains("vue-script") ?? false))
+                        .FirstOrDefault();
+
+                    if (_script == null) throw new ArgumentException("Vue script placeholder not found. Use tag <body runat=\"server\"> or <placeholder id=\"vuescript\" runat=\"server\"></placeholder>");
+
                     // if is ajax, do not load all components
-                    if(!isAjax)
+                    if (!isAjax)
                     {
                         RegisterScripts();
                     }
@@ -72,37 +87,25 @@ namespace Vue
         private void RegisterScripts()
         {
             // register vue/vue-page scripts
-            Header.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue.js"))));
-            Header.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-page.js"))));
-            Header.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-ajaxget.js"))));
+            _script.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue.js"))));
+            _script.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-page.js"))));
+            _script.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-ajaxget.js"))));
 
             var version = DateTime.Now.Ticks.ToString(); // typeof(VueHandler).Assembly.GetName().Version.ToString();
 
-            Header.Controls.Add(new ASP.LiteralControl("<script src=\"VueHandler.ashx?_=" + version + "\"></script>\n"));
+            _script.Controls.Add(new ASP.LiteralControl("<script src=\"VueHandler.ashx?_=" + version + "\"></script>\n"));
         }
 
         private void RegisterInitialize()
         {
-            var controls = Master != null ?
-                Master.Controls.Cast<ASP.Control>() :
-                Controls.Cast<ASP.Control>();
 
-            // get body html control
-            var body = controls
-                .Where(x => x is HtmlGenericControl)
-                .Select(x => x as HtmlGenericControl)
-                .Where(x => x.TagName == "body")
-                .FirstOrDefault();
-
-            if (body == null) throw new ArgumentException("Tag <body> must be runat=\"server\"");
-
-            foreach(var el in _viewModels.Keys)
+            foreach (var el in _viewModels.Keys)
             {
                 // load viewModel from Page
                 var vm = ViewModel.Load(_viewModels[el], Context);
 
                 // initialize vue instance
-                body.Controls.Add(new ASP.LiteralControl("<script>\n" + vm.RenderInitialize(el) + "\n</script>"));
+                _script.Controls.Add(new ASP.LiteralControl("<script>\n" + vm.RenderInitialize(el) + "\n</script>"));
             }
         }
 

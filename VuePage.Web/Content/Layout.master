@@ -1,17 +1,15 @@
 ﻿<%@ Master Language="C#" %>
 <!DOCTYPE html>
-<script runat="server">
-
-</script>
 <html>
 <head runat="server">
     <link href="/Content/site.css" rel="stylesheet" />
 </head>
-<body runat="server">
+<body>
     <a href="/">[ Home ]</a><hr />
     <div id="app" v-cloak>
         <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
     </div>
+    <placeholder runat="server" id="vuescript"></placeholder>
     <script src="/Content/addons.js"></script>
 </body>
 </html>

@@ -26,8 +26,8 @@
 
 </script>
 <html>
-<head runat="server"></head>
-<body runat="server">
+<head></head>
+<body>
 
     <div id="app1">
         <h1>Context 1</h1><hr />
@@ -44,6 +44,8 @@
         <h1>Context 3</h1><hr />
         <input type="text" v-model="Text" />{{ Text }}
     </div>
+
+    <placeholder runat="server" id="vuescript"></placeholder>
 
 </body>
 </html>
