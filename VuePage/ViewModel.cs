@@ -49,11 +49,17 @@ namespace Vue
 
         #region Created
 
+        public event EventHandler Created;
+
         /// <summary>
         /// In page call during initialize. In component, made ajax call when component are created
         /// </summary>
-        public virtual void Created()
+        public virtual void OnCreated()
         {
+            if (Created != null)
+            {
+                Created(this, EventArgs.Empty);
+            }
         }
 
         #endregion
@@ -63,7 +69,7 @@ namespace Vue
         public virtual string RenderInitialize(string el)
         {
             // created event are called when render initilize
-            Created();
+            OnCreated();
 
             var writer = new StringBuilder();
 
@@ -104,11 +110,11 @@ namespace Vue
             writer.AppendLine(_js.ToString());
 
             // only call Created method if created was override in component
-            var created = GetType().GetMethod("Created");
+            var created = GetType().GetMethod("OnCreated");
 
-            if(created.GetBaseDefinition().DeclaringType != created.DeclaringType)
+            if(Created != null || created.GetBaseDefinition().DeclaringType != created.DeclaringType)
             {
-                writer.AppendLine("    this.$server('Created', [], null, this);");
+                writer.AppendLine("    this.$server('OnCreated', [], null, this);");
             }
 
             writer.AppendLine("  },");

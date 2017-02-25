@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Web;
+using System.Web.UI;
 using Newtonsoft.Json.Linq;
 
 namespace Vue
@@ -14,6 +16,7 @@ namespace Vue
         public string Name { get; set; }
         public string Url { get; set; }
         public Type ViewModelType { get; set; }
+        public bool Inline { get; set; }
 
         internal static Dictionary<string, Component> All { get; private set; } = new Dictionary<string, Component>();
 
@@ -28,7 +31,8 @@ namespace Vue
                 {
                     Name = name,
                     Url = url,
-                    ViewModelType = viewModelType
+                    ViewModelType = viewModelType,
+                    Inline = viewModelType == null
                 };
             }
         }

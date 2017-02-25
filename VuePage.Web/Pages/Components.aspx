@@ -9,11 +9,7 @@
 
         public PageVM()
         {
-        }
-
-        public override void Created()
-        {
-            Name = DateTime.Now.Second.ToString();
+            this.Created += (s, e) => Name = DateTime.Now.Second.ToString();
         }
 
         public void IncrementTotal()

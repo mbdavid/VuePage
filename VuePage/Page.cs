@@ -76,7 +76,9 @@ namespace Vue
             Header.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-page.js"))));
             Header.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-ajaxget.js"))));
 
-            Header.Controls.Add(new ASP.LiteralControl("<script src=\"VueHandler.ashx\"></script>\n"));
+            var version = DateTime.Now.Ticks.ToString(); // typeof(VueHandler).Assembly.GetName().Version.ToString();
+
+            Header.Controls.Add(new ASP.LiteralControl("<script src=\"VueHandler.ashx?_=" + version + "\"></script>\n"));
         }
 
         private void RegisterInitialize()

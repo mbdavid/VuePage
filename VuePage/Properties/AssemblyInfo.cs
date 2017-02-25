@@ -11,8 +11,8 @@ using System.Web.UI;
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyFileVersion("1.0.0")]
+[assembly: AssemblyVersion("1.1.1.*")]
+[assembly: AssemblyFileVersion("1.1.1")]
 
 [assembly: ComVisible(false)]
 [assembly: Guid("d25a9b45-e49f-44aa-b028-2538861baedf")]

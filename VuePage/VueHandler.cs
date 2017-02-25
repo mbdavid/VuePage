@@ -16,7 +16,7 @@ namespace Vue
     /// </summary>
     public class VueHandler : IHttpHandler
     {
-        public bool IsReusable { get { return true; } }
+        public bool IsReusable { get { return false; } }
 
         public void ProcessRequest(HttpContext context)
         {
@@ -29,15 +29,18 @@ namespace Vue
                     var loader = new ASP.UserControl();
                     var control = loader.LoadControl(component.Url);
 
-                    // if component has no viewModelType, auto-detect inside control
-                    if (component.ViewModelType == null)
+                    // search for viewmode if viewmodel is inline in ascx control
+                    if(component.Inline)
                     {
-                        component.ViewModelType = control.GetType().GetNestedTypes().FirstOrDefault(x => typeof(ViewModel).IsAssignableFrom(x));
+                        component.ViewModelType = control.GetType()
+                            .GetNestedTypes()
+                            .FirstOrDefault(x => typeof(ViewModel).IsAssignableFrom(x));
 
-                        if (component.ViewModelType == null) throw new ArgumentException("ViewModel not found for component in " + component.Url);
+                        if (component.ViewModelType == null) throw new ArgumentException("ViewModel not found in " + component.Url + " user control");
                     }
 
                     var vm = ViewModel.Load(component.ViewModelType, context);
+
                     var template = GetTemplate(control);
 
                     // include each component in page inital
@@ -51,7 +54,7 @@ namespace Vue
             catch (Exception ex)
             {
                 context.Response.ClearContent();
-                context.Response.Write("alert('VuePage: Error on load compoenent: " + ex.Message);
+                context.Response.Write("alert('VuePage: Error on load compoenent: " + HttpUtility.HtmlAttributeEncode(ex.Message) + "');");
             }
 
             context.Response.ContentType = "text/javascript";
