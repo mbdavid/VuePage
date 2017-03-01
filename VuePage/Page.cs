@@ -86,26 +86,27 @@ namespace Vue
 
         private void RegisterScripts()
         {
-            // register vue/vue-page scripts
-            _script.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue.js"))));
-            _script.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-page.js"))));
-            _script.Controls.Add(new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-ajaxget.js"))));
+            // reigster all scripts at begin tag (thats why are inverted)
 
             var version = DateTime.Now.Ticks.ToString(); // typeof(VueHandler).Assembly.GetName().Version.ToString();
 
-            _script.Controls.Add(new ASP.LiteralControl("<script src=\"VueHandler.ashx?_=" + version + "\"></script>\n"));
+            _script.Controls.AddAt(0, new ASP.LiteralControl("<script src=\"VueHandler.ashx?_=" + version + "\"></script>\n"));
+
+            _script.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-ajaxget.js"))));
+            _script.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-page.js"))));
+            _script.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue.js"))));
         }
 
         private void RegisterInitialize()
         {
-
             foreach (var el in _viewModels.Keys)
             {
                 // load viewModel from Page
-                var vm = ViewModel.Load(_viewModels[el], Context);
-
-                // initialize vue instance
-                _script.Controls.Add(new ASP.LiteralControl("<script>\n" + vm.RenderInitialize(el) + "\n</script>"));
+                using (var vm = ViewModel.Load(_viewModels[el], Context))
+                {
+                    // initialize vue instance
+                    _script.Controls.Add(new ASP.LiteralControl("<script>\n" + vm.RenderInitialize(el) + "\n</script>"));
+                }
             }
         }
 
@@ -116,14 +117,16 @@ namespace Vue
             var method = Request.Form["_method"];
             var parameters = JArray.Parse(Request.Form["_params"]).ToArray();
             var files = Request.Files.GetMultiple("_files");
+            var update = string.Empty;
 
             // load viewModel
-            var vm = name.StartsWith("#") ?
+            using (var vm = name.StartsWith("#") ?
                 ViewModel.Load(_viewModels[name.Substring(1)], Context) :
-                ViewModel.Load(Component.All[name].ViewModelType, Context);
-
-            // update model, execute server method and return model changes
-            var update = vm.UpdateModel(model, method, parameters, files);
+                ViewModel.Load(Component.All[name].ViewModelType, Context))
+            {
+                // update model, execute server method and return model changes
+                update = vm.UpdateModel(model, method, parameters, files);
+            }
 
             // clear output and write only model updates
             Response.ClearContent();

@@ -39,16 +39,17 @@ namespace Vue
                         if (component.ViewModelType == null) throw new ArgumentException("ViewModel not found in " + component.Url + " user control");
                     }
 
-                    var vm = ViewModel.Load(component.ViewModelType, context);
+                    using (var vm = ViewModel.Load(component.ViewModelType, context))
+                    {
+                        var template = GetTemplate(control);
 
-                    var template = GetTemplate(control);
+                        // include each component in page inital
+                        context.Response.Write("//\n");
+                        context.Response.Write("// Component: " + component.Name + "\n");
+                        context.Response.Write("//\n");
 
-                    // include each component in page inital
-                    context.Response.Write("//\n");
-                    context.Response.Write("// Component: " + component.Name + "\n");
-                    context.Response.Write("//\n");
-
-                    context.Response.Write(vm.RenderComponent(component.Name, template));
+                        context.Response.Write(vm.RenderComponent(component.Name, template));
+                    }
                 }
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Vue
@@ -14,12 +15,12 @@ namespace Vue
 
         public JavascriptBuilder ConsoleLog(string text)
         {
-            return Code("console.log('{0}');", text);
+            return Code("console.log('{0}');", HttpUtility.JavaScriptStringEncode(text));
         }
 
         public JavascriptBuilder Alert(string text)
         {
-            return Code("alert('{0}');", text);
+            return Code("alert('{0}');", HttpUtility.JavaScriptStringEncode(text));
         }
 
         public JavascriptBuilder Focus(string id)
@@ -29,12 +30,12 @@ namespace Vue
 
         public JavascriptBuilder NavigateTo(string url)
         {
-            return Code("this.$navigate('{0}');", url);
+            return Code("this.$navigate('{0}');", HttpUtility.JavaScriptStringEncode(url));
         }
 
         public JavascriptBuilder RedirectTo(string url)
         {
-            return Code("location.href = '{0}';", url);
+            return Code("location.href = '{0}';", HttpUtility.JavaScriptStringEncode(url));
         }
 
         public JavascriptBuilder Emit(string evnt, params object[] args)

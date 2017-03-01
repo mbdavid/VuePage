@@ -15,7 +15,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Vue
 {
-    public class ViewModel
+    public class ViewModel : IDisposable
     {
         private JavascriptBuilder _js = new JavascriptBuilder();
         private JsonSerializerSettings _serializeSettings = new JsonSerializerSettings
@@ -26,6 +26,8 @@ namespace Vue
         };
 
         protected JavascriptBuilder JS { get { return _js; } }
+
+        protected HttpContext Context { get; private set; }
 
         public ViewModel()
         {
@@ -43,6 +45,23 @@ namespace Vue
                 Code = JavascriptExpressionVisitor.Resolve(expr),
                 Value = (object o) => expr.Compile()
             };
+        }
+
+        #endregion
+
+        #region Init
+
+        public event EventHandler Init;
+
+        /// <summary>
+        /// Called after create instance and set Context object
+        /// </summary>
+        protected virtual void OnInit()
+        {
+            if (Init != null)
+            {
+                Init(this, EventArgs.Empty);
+            }
         }
 
         #endregion
@@ -240,6 +259,12 @@ namespace Vue
 
                         pars.Add(obj);
                     }
+                    else if(token.Type == JTokenType.String && p.ParameterType.IsEnum)
+                    {
+                        var value = ((JValue)token).Value.ToString();
+
+                        pars.Add(Enum.Parse(p.ParameterType, value));
+                    }
                     else
                     {
                         var value = ((JValue)token).Value;
@@ -310,10 +335,19 @@ namespace Vue
                 else throw new SystemException("ViewModel contains unknown ctor parameter: " + par.Name);
             }
 
-            return (ViewModel)Activator.CreateInstance(viewModelType, parameters.ToArray());
+            var vm = (ViewModel)Activator.CreateInstance(viewModelType, parameters.ToArray());
+
+            vm.Context = context;
+
+            vm.OnInit();
+
+            return vm;
         }
 
         #endregion
 
+        public virtual void Dispose()
+        {
+        }
     }
 }
