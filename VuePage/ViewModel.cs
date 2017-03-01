@@ -73,7 +73,7 @@ namespace Vue
         /// <summary>
         /// In page call during initialize. In component, made ajax call when component are created
         /// </summary>
-        public virtual void OnCreated()
+        protected virtual void OnCreated()
         {
             if (Created != null)
             {
@@ -233,7 +233,15 @@ namespace Vue
 
         private void ExecuteMethod(string name, JToken[] parameters, IList<HttpPostedFile> files)
         {
-            var method = this.GetType().GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
+            var method = this.GetType()
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
+                .Where(x => x.Name == name)
+                .Where(x => x.IsFamily || x.IsPublic)
+                .Where(x => x.GetParameters().Length == parameters.Length)
+                .FirstOrDefault();
+
+            if (method == null) throw new SystemException("Method " + name + " do not exists or are not public/protected or has not same paramters length");
+
             var pars = new List<object>();
             var index = 0;
 
