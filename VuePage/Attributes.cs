@@ -68,4 +68,37 @@ namespace Vue
             Name = name;
         }
     }
+
+    /// <summary>
+    /// Test is user are authenticated to call ViewModel decorated with [Authorize]
+    /// </summary>
+    public class AuthenticateAttribute : Attribute
+    {
+        public string RedirectTo { get; set; }
+
+        public AuthenticateAttribute()
+        {
+        }
+
+        /// <summary>
+        /// If not authenticated, redirect to this url
+        /// </summary>
+        public AuthenticateAttribute(string redirectTo)
+        {
+            RedirectTo = redirectTo;
+        }
+    }
+
+    /// <summary>
+    /// Validate if user contains role for this Method call, using User.IsUserInRole()
+    /// </summary>
+    public class RoleAttribute : Attribute
+    {
+        public string[] Roles { get; set; }
+
+        public RoleAttribute(params string[] roles)
+        {
+            Roles = roles;
+        }
+    }
 }

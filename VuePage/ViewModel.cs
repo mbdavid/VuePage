@@ -129,7 +129,7 @@ namespace Vue
             writer.AppendLine(_js.ToString());
 
             // only call Created method if created was override in component
-            var created = GetType().GetMethod("OnCreated");
+            var created = GetType().GetMethod("OnCreated", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             if(Created != null || created.GetBaseDefinition().DeclaringType != created.DeclaringType)
             {
@@ -237,10 +237,18 @@ namespace Vue
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
                 .Where(x => x.Name == name)
                 .Where(x => x.IsFamily || x.IsPublic)
-                .Where(x => x.GetParameters().Length == parameters.Length)
+                //.Where(x => x.GetParameters().Length == (parameters.Length + files.Count))
                 .FirstOrDefault();
 
             if (method == null) throw new SystemException("Method " + name + " do not exists or are not public/protected or has not same paramters length");
+
+            // test if method are decorated with [Roles("...")]
+            var roleAttr = method.GetCustomAttribute<RoleAttribute>();
+
+            if (roleAttr != null)
+            {
+                AuthorizeMethod(name, roleAttr.Roles);
+            }
 
             var pars = new List<object>();
             var index = 0;
@@ -291,6 +299,35 @@ namespace Vue
         protected virtual void OnExecuteMethod(MethodInfo method, object[] args)
         {
             method.Invoke(this, args);
+        }
+
+        /// <summary>
+        /// Test if current user contains role permission
+        /// </summary>
+        private void AuthorizeMethod(string method, string[] roles)
+        {
+            var user = Context.User;
+
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("Access denied on " + method + " method");
+            }
+
+            var accessDenied = true;
+
+            foreach (var role in roles)
+            {
+                if (Context.User.IsInRole(role))
+                {
+                    accessDenied = false;
+                    break;
+                }
+            }
+
+            if (accessDenied)
+            {
+                throw new UnauthorizedAccessException("Access denied on " + method + " method");
+            }
         }
 
         private string RenderUpdate(string model)

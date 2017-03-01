@@ -43,8 +43,8 @@ public class PageVM : Vue.ViewModel
 
 
 # TODO
+- ExecuteMethod test paramteres values
 - Cache ViewModel definition (methods, watch, ...)
 - Cache handler
-- [Authorize] attribute - checks HttpContext.User.Identity.IsAuthenticated
+- [Authorize] attribute - checks HttpContext.User.Identity.IsAuthenticated. Support redirect???
 - [Role("admin", "user")] - checkes HttpContext.User.IsInRole()
-- Capture error handler, like Vue.ViewModel.Register<Exception>((e, vm) => vm.JS.Alert('Error here: ' + e.Message));
