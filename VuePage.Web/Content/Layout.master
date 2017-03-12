@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head runat="server">
+    <script src="/Content/addons.js"></script>
     <link href="/Content/site.css" rel="stylesheet" />
 </head>
 <body>
@@ -9,7 +10,5 @@
     <div id="app" v-cloak>
         <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
     </div>
-    <placeholder runat="server" id="vuescript"></placeholder>
-    <script src="/Content/addons.js"></script>
 </body>
 </html>

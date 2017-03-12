@@ -16,7 +16,7 @@
 </script>
 <html>
 <head runat="server"></head>
-<body runat="server">
+<body>
 
     <div id="app">
 

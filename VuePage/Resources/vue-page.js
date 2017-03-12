@@ -10,7 +10,10 @@
             var _queue = [];
             var _running = false;
 
-            // Request new server call
+            // in watch, test before call if field are not been updated
+            vue.prototype.$updating = false;
+
+            // request new server call
             vue.prototype.$server = function $server(name, params, files, vm) {
 
                 var target = (event ? event.target : document.body) || document.body;
@@ -73,11 +76,21 @@
                     // empty file inputs (if exists)
                     files.forEach(function (f) { f.value = ''; });
 
+                    // server-side changes not call watch methods
+                    request.vm.$updating = true;
+
                     Object.keys(update).forEach(function (key) {
                         var value = update[key];
                         log('>  $data["' + key + '"] = ', value);
+
+                        // update viewmodel
                         request.vm.$data[key] = value;
                     });
+
+                    request.vm.$nextTick(function () {
+                        request.vm.$updating = false;
+                    });
+
 
                     if (js) {
                         log('>  $eval = ', response['js']);

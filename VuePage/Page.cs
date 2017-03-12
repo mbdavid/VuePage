@@ -19,8 +19,6 @@ namespace Vue
     {
         private Dictionary<string, Type> _viewModels = new Dictionary<string, Type>();
 
-        private ASP.Control _script = null;
-
         public Page()
         {
             // auto register inner class page viewModel
@@ -53,15 +51,6 @@ namespace Vue
                         Master.Controls.Cast<ASP.Control>() :
                         Controls.Cast<ASP.Control>();
 
-                    // find script placeholder (body runat=server, div#id=vuescript, [class=vue-script])
-                    _script = controls
-                        .Where(x => x is HtmlGenericControl)
-                        .Select(x => x as HtmlGenericControl)
-                        .Where(x => x.TagName == "body" || x.ID == "vuescript" || (x.Attributes["class"]?.Contains("vue-script") ?? false))
-                        .FirstOrDefault();
-
-                    if (_script == null) throw new ArgumentException("Vue script placeholder not found. Use tag <body runat=\"server\"> or <placeholder id=\"vuescript\" runat=\"server\"></placeholder>");
-
                     // if is ajax, do not load all components
                     if (!isAjax)
                     {
@@ -69,7 +58,7 @@ namespace Vue
                     }
 
                     // always register initializer
-                    RegisterInitialize();
+                    RegisterInitialize(isAjax);
                 }
             };
         }
@@ -90,22 +79,26 @@ namespace Vue
 
             var version = DateTime.Now.Ticks.ToString(); // typeof(VueHandler).Assembly.GetName().Version.ToString();
 
-            _script.Controls.AddAt(0, new ASP.LiteralControl("<script src=\"VueHandler.ashx?_=" + version + "\"></script>\n"));
+            Header.Controls.AddAt(0, new ASP.LiteralControl("<script src=\"VueHandler.ashx?_=" + version + "\"></script>\n"));
 
-            _script.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-ajaxget.js"))));
-            _script.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-page.js"))));
-            _script.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue.js"))));
+            Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-ajaxget.js"))));
+            Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue-page.js"))));
+            Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", ClientScript.GetWebResourceUrl(typeof(Page), "VuePage.Resources.vue.js"))));
         }
 
-        private void RegisterInitialize()
+        private void RegisterInitialize(bool isAjax)
         {
             foreach (var el in _viewModels.Keys)
             {
                 // load viewModel from Page
                 using (var vm = ViewModel.Load(_viewModels[el], Context))
                 {
+                    var script = isAjax ?
+                        vm.RenderInitialize(el) :
+                        "document.addEventListener('DOMContentLoaded', function(event) {\n" + vm.RenderInitialize(el) + "\n});";
+
                     // initialize vue instance
-                    _script.Controls.Add(new ASP.LiteralControl("<script>\n" + vm.RenderInitialize(el) + "\n</script>"));
+                    Header.Controls.Add(new ASP.LiteralControl("<script>" + script + "</script>"));
                 }
             }
         }

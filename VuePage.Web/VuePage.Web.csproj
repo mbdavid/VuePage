@@ -73,6 +73,7 @@
     <Content Include="Pages\Components.aspx" />
     <Content Include="Pages\Loading.aspx" />
     <Content Include="Pages\MultiInstances.aspx" />
+    <Content Include="Pages\PagedGrid.aspx" />
     <Content Include="Pages\Todo.aspx" />
     <Content Include="Pages\Upload.aspx" />
     <Content Include="Pages\EditGrid.aspx" />
@@ -82,6 +83,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Paged.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

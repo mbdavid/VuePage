@@ -155,8 +155,7 @@ namespace Vue
             foreach (var m in methods)
             {
                 // checks if method contains Script attribute (will run before call $server)
-                var attr = m.GetCustomAttribute<ScriptAttribute>(true);
-                var script = attr == null ? null : attr.Code + "\n      ";
+                var script = m.GetCustomAttribute<ScriptAttribute>(true)?.Code + "\n        ";
 
                 // get all parameters without HttpPostFile parameters
                 var parameters = m.GetParameters()
@@ -205,10 +204,13 @@ namespace Vue
 
             foreach (var w in watchs)
             {
+                // checks if method contains Script attribute (will run before call $server)
+                var script = w.GetCustomAttribute<ScriptAttribute>(true)?.Code + "\n        ";
+
                 var name = w.GetCustomAttribute<WatchAttribute>()?.Name ?? w.Name.Substring(0, w.Name.LastIndexOf("_"));
 
-                writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{ this.$server('{1}', [v, o], null, this); }},\n      deep: true\n    }},\n", 
-                    name, w.Name);
+                writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{\n        if (this.$updating) return false;\n        {2}this.$server('{1}', [v, o], null, this);\n      }},\n      deep: true\n    }},\n", 
+                    name, w.Name, script);
             }
 
             writer.Length -= 2;
