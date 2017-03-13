@@ -19,7 +19,7 @@ namespace VuePage.Web
         public void Load(IEnumerable<T> items)
         {
             Count = items.Count();
-            PageCount = (Count / PageSize) + 1;
+            PageCount = ((Count - 1) / PageSize) + 1;
             Index = Index < 0 ? 0 :
                 Index > (PageCount - 1) ? PageCount - 1 :
                 Index;
