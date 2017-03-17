@@ -75,6 +75,7 @@
     <Content Include="Pages\MultiInstances.aspx" />
     <Content Include="Pages\PagedGrid.aspx" />
     <Content Include="Pages\Todo.aspx" />
+    <Content Include="Pages\Mixin.aspx" />
     <Content Include="Pages\Upload.aspx" />
     <Content Include="Pages\EditGrid.aspx" />
     <Content Include="Pages\Watch.aspx" />

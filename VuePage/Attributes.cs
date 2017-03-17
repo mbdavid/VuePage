@@ -31,6 +31,19 @@ namespace Vue
     }
 
     /// <summary>
+    /// Define this viewmodel as an extend from a javascript defined variable
+    /// </summary>
+    public class MixinAttribute : Attribute
+    {
+        public string WindowVariable { get; set; }
+
+        public MixinAttribute(string windowVariable)
+        {
+            WindowVariable = windowVariable;
+        }
+    }
+
+    /// <summary>
     /// Define ViewModel id element in page level view model
     /// </summary>
     public class ElementAttribute : Attribute

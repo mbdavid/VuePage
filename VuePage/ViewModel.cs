@@ -216,7 +216,18 @@ namespace Vue
             writer.Length -= 2;
 
             writer.AppendLine();
-            writer.AppendLine("  }");
+            writer.Append("  }");
+
+            // test if exists mixin javascript variable
+            var mixin = this.GetType().GetCustomAttribute<MixinAttribute>();
+
+            if(mixin != null)
+            {
+                writer.Append(",\n");
+                writer.AppendFormat("  mixins:[{0}]", mixin.WindowVariable);
+            }
+
+            writer.AppendLine();
             writer.AppendLine("});");
         }
 

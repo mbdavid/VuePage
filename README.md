@@ -48,3 +48,32 @@ public class PageVM : Vue.ViewModel
 - Cache handler
 - [Authorize] attribute - checks HttpContext.User.Identity.IsAuthenticated. Support redirect???
 - [Role("admin", "user")] - checkes HttpContext.User.IsInRole()
+
+- Permitir escrever, em javascript (e não no server) codigo pra ViewModel. Tipo, quero escrever o metodo:
+
+[Mixin("vm")]
+public class PageVM : ViewModel
+{
+}
+
+window["vm"] = {
+    methods: {
+        PermiteExcluir: function(item) { .... }
+    }
+}
+
+    
+# VuePage no .NET Core
+
+- Rodar em MVC > VueCore | VueMvc | VueAspNet
+- Controller padrão?
+- Como criar rotas
+
+\Views
+    - .cshtml
+\ViewModels
+    - .cs
+    
+
+
+app.UseVue()

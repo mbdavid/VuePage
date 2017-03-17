@@ -64,7 +64,8 @@
                 var type = /<script.*type=['"](.*?)['"]/g.exec(tags[0]);
 
                 if (type === null || type[1] == "text/javascript") {
-                    queue.push({ script: tags[2], style: tags[4] });
+                    var item = { script: tags[2], style: tags[4] };
+                    if (item.script || item.style) queue.push(item);
                 }
 
                 tags = re.exec(response);
@@ -77,7 +78,7 @@
                     return autofocus();
                 }
 
-                var item = queue.shift();
+                var item = queue.pop();
 
                 if (item.style) {
                     header('style', function (t) { t.innerHTML = item.style });
