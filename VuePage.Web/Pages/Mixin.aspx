@@ -11,33 +11,30 @@
     }
 
 </script>
-<html>
-<head runat="server"></head>
-<body>
+<asp:Content ContentPlaceHolderID="body" runat="server">
 
-    <a href="/">Home</a><hr />
-
-    <h1>Mixin</h1><hr />
+    <h1>Mixin</h1>
 
     <div id="app">
 
         <button @click="ServerClick()">Run from server</button>
-        <button @click="ClientClick()">Run from javascript</button>
+        <button @click="ClientClick()">Run from javascript [1]</button>
 
     </div>
 
+</asp:Content>
+<asp:Content ContentPlaceHolderID="footer" runat="server">
 
-    <script>
+<script>
 
-        window["ext"] = {
-            methods: {
-                ClientClick: function () {
-                    alert("It´s from client only script [1]");
-                }
+    window["ext"] = {
+        methods: {
+            ClientClick: function () {
+                alert("It´s from client only script [1]");
             }
         }
+    }
 
-    </script>
+</script>
 
-</body>
-</html>
+</asp:Content>

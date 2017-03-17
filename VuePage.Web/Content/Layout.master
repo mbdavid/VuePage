@@ -10,5 +10,6 @@
     <div id="app" v-cloak>
         <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
     </div>
+    <asp:ContentPlaceHolder id="footer" runat="server"></asp:ContentPlaceHolder>
 </body>
 </html>

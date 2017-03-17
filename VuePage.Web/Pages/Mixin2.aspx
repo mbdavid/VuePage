@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Title="Mixin" %>
+﻿<%@ Page Language="C#" Title="Mixin2" %>
 <script runat="server">
 
     [Mixin("ext")]
@@ -11,13 +11,9 @@
     }
 
 </script>
-<html>
-<head runat="server"></head>
-<body>
+<asp:Content ContentPlaceHolderID="body" runat="server">
 
-    <a href="/">Home</a><hr />
-
-    <h1>Mixin [2] - Reusing same variable name</h1><hr />
+    <h1>Mixin [2] - Reusing same variable name</h1>
 
     <div id="app">
 
@@ -26,6 +22,8 @@
 
     </div>
 
+</asp:Content>
+<asp:Content ContentPlaceHolderID="footer" runat="server">
 
     <script>
 
@@ -39,5 +37,4 @@
 
     </script>
 
-</body>
-</html>
+</asp:Content>
