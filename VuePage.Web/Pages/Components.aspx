@@ -7,9 +7,9 @@
         public int Total { get; set; }
         public string Name { get; set; }
 
-        public PageVM()
+        protected override void OnCreated()
         {
-            this.Created += (s, e) => Name = DateTime.Now.Second.ToString();
+            Name = DateTime.Now.Second.ToString();
         }
 
         public void IncrementTotal()
@@ -33,15 +33,55 @@
     <button @click="ShowName()">ShowName</button>
     <hr />
     Clicks: {{ Total }}
-    <counter v-for="i in Buttons" @inc="IncrementTotal()"></counter>
+    <counter v-for="i in Buttons" @inc="IncrementTotal()" />
     <br />
     <button @click="Buttons++">+</button>
     <button @click="Buttons--">-</button>
     <hr />
     <pre>{{$data}}</pre>
 
-    <inputbox Name="Initial value"></inputbox>
+    <inputbox Name="Initial value" />
     <hr />
-    <inputbox Name="Mauricio"></inputbox>
+    <inputbox Name="Mauricio" />
+
+    <script>
+
+        function loadComponent(name, resolve) {
+            var xhr = new XMLHttpRequest();
+
+            xhr.onload = function () {
+                if (xhr.status < 200 || xhr.status >= 400) {
+                    alert('Error on load component: ' + name);
+                    return;
+                }
+
+                console.log('js=', xhr.responseText)
+
+                resolve(new Function(xhr.responseText));
+            };
+
+            //log('$loadComponent ("' + name + '")');
+
+            xhr.open('GET', location.pathname + '?component=' + name, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.send();
+        }
+
+
+        return {
+            components: {
+                counter: function (r) {
+                    loadComponent('Counter', r);
+                },
+                inputbox: function (r) {
+                    loadComponent('InputBox', r);
+                }
+            }
+        }
+
+
+
+    </script>
+
 
 </asp:Content>

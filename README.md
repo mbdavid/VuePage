@@ -22,13 +22,31 @@ public class PageVM : Vue.ViewModel
 ```
 
 ```HTML
-<div id="app">
+<vue:App runat="server">
     Username: <input type="text" v-model.lazy="Username" /><br/>
     Password: <input type="password" v-model="Password" /><br/>
     <button type="button" v-on:click="Login()">Login</button>
     <hr/>
     {{ Message }}
-</div>
+    
+    <style scoped>
+        button { ... }
+    </style>
+    <script>
+    
+        // vue mixin
+        return {
+            methods: {
+                showError: function() {
+                   // ..
+                }
+            }
+        }
+    
+    </script>
+    
+    
+</vue:App>
 ```
 
 - Support Vue `Watch` server-side

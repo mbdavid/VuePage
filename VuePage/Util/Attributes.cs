@@ -9,12 +9,12 @@ namespace Vue
     /// <summary>
     /// Define javascript code before call $server() method
     /// </summary>
-    public class ScriptAttribute : Attribute
+    public class PreScriptAttribute : Attribute
     {
         /// <summary>
-        /// Execute script before call $server() method
+        /// Execute script before to be call before $server() method
         /// </summary>
-        public ScriptAttribute(string code)
+        public PreScriptAttribute(string code)
         {
             Code = code;
         }
@@ -22,37 +22,27 @@ namespace Vue
         public string Code { get; set; }
     }
 
-    public class ConfirmAttribute : ScriptAttribute
+    /// <summary>
+    /// Define javascript code to be call after $server() method
+    /// </summary>
+    public class PostScriptAttribute : Attribute
+    {
+        /// <summary>
+        /// Execute script after call $server() method
+        /// </summary>
+        public PostScriptAttribute(string code)
+        {
+            Code = code;
+        }
+
+        public string Code { get; set; }
+    }
+
+    public class ConfirmAttribute : PreScriptAttribute
     {
         public ConfirmAttribute(string text)
             : base("if (confirm('" + text + "') === false) return false;")
         {
-        }
-    }
-
-    /// <summary>
-    /// Define this viewmodel as an extend from a javascript defined variable
-    /// </summary>
-    public class MixinAttribute : Attribute
-    {
-        public string WindowVariable { get; set; }
-
-        public MixinAttribute(string windowVariable)
-        {
-            WindowVariable = windowVariable;
-        }
-    }
-
-    /// <summary>
-    /// Define ViewModel id element in page level view model
-    /// </summary>
-    public class ElementAttribute : Attribute
-    {
-        public string Id { get; set; }
-
-        public ElementAttribute(string id)
-        {
-            Id = id;
         }
     }
 

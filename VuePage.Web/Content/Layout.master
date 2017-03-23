@@ -7,9 +7,11 @@
 </head>
 <body>
     <a href="/">[ Home ]</a><hr />
-    <div id="app" v-cloak>
-        <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
+    <vue:AppControl runat="server" id="app">
+        <div>
+            <asp:ContentPlaceHolder id="body" runat="server"></asp:ContentPlaceHolder>
+        </div>
+    </vue:AppControl>
     </div>
-    <asp:ContentPlaceHolder id="footer" runat="server"></asp:ContentPlaceHolder>
 </body>
 </html>

@@ -3,7 +3,7 @@
     // register Vue.$loading function
     var _loading = Vue.$loading = new Loading();
 
-    // register vue plugin to server call (vue.$server)
+    // register vue plugin to server call (vue.$post)
     Vue.use({
         install: function (vue) {
 
@@ -14,19 +14,23 @@
             vue.prototype.$updating = false;
 
             // request new server call
-            vue.prototype.$server = function $server(name, params, files, vm) {
+            vue.prototype.$post = function $post(name, params, files, vm) {
 
                 var target = (event ? event.target : document.body) || document.body;
 
-                _queue.push({
-                    target: target,
-                    name: name,
-                    params: params,
-                    files: files,
-                    vm: vm
-                });
+                return new Promise(function (resolve) {
 
-                if (!_running) nextQueue();
+                    _queue.push({
+                        target: target,
+                        name: name,
+                        params: params,
+                        files: files,
+                        vm: vm,
+                        resolve: resolve
+                    });
+
+                    if (!_running) nextQueue();
+                });
             }
 
             // Execute queue
@@ -44,6 +48,9 @@
                     ajax(request, function () {
 
                         _loading.stop();
+
+                        // resolve request promise
+                        request.resolve(request.vm);
 
                         // if no more items in queue, stop running
                         if (_queue.length === 0) return _running = false;
@@ -124,7 +131,7 @@
                     });
                 }
 
-                log('$server ("' + request.name + '") = ', request.params);
+                log('$post ("' + request.name + '") = ', request.params);
 
                 xhr.open('POST', location.href, true);
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');

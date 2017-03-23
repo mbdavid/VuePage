@@ -17,6 +17,6 @@ using System.Web.UI;
 [assembly: ComVisible(false)]
 [assembly: Guid("d25a9b45-e49f-44aa-b028-2538861baedf")]
 
-[assembly: WebResource("VuePage.Resources.vue.js", "text/javascript")]
-[assembly: WebResource("VuePage.Resources.vue-page.js", "text/javascript")]
-[assembly: WebResource("VuePage.Resources.vue-ajaxget.js", "text/javascript")]
+[assembly: WebResource("VuePage.Scripts.vue.js", "text/javascript")]
+[assembly: WebResource("VuePage.Scripts.vue-page.js", "text/javascript")]
+[assembly: WebResource("VuePage.Scripts.vue-ajaxget.js", "text/javascript")]

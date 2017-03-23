@@ -48,11 +48,11 @@
             <td style="text-align: right">{{ Item.Price | currency }}</td>
         </tr>
     </table>
-    <button @click="Products.Index = 0" :disabled="Products.Index == 0">|<</button>
-    <button @click="Products.Index--" :disabled="Products.Index == 0"><</button>
+    <button @click="Products.Index = 0" :disabled="Products.Index == 0">|&lt;</button>
+    <button @click="Products.Index--" :disabled="Products.Index == 0">&lt;</button>
     Page {{ Products.Index + 1 }}/{{ Products.PageCount }}
-    <button @click="Products.Index++" :disabled="Products.Index == Products.PageCount - 1">></button>
-    <button @click="Products.Index = Products.PageCount - 1" :disabled="Products.Index == Products.PageCount - 1">>|</button>
+    <button @click="Products.Index++" :disabled="Products.Index == Products.PageCount - 1">&gt;</button>
+    <button @click="Products.Index = Products.PageCount - 1" :disabled="Products.Index == Products.PageCount - 1">&gt;|</button>
     (Total: {{ Products.Count }});
 
     <select v-model.number="Products.PageSize">

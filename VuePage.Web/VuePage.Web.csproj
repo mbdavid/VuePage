@@ -69,19 +69,17 @@
     <Content Include="Components\Counter.ascx" />
     <Content Include="Components\InputBox.ascx" />
     <Content Include="Default.aspx" />
-    <Content Include="Global.asax" />
-    <Content Include="Pages\Components.aspx" />
-    <Content Include="Pages\Loading.aspx" />
-    <Content Include="Pages\Mixin2.aspx" />
-    <Content Include="Pages\MultiInstances.aspx" />
-    <Content Include="Pages\PagedGrid.aspx" />
-    <Content Include="Pages\Todo.aspx" />
-    <Content Include="Pages\Mixin.aspx" />
-    <Content Include="Pages\Upload.aspx" />
-    <Content Include="Pages\EditGrid.aspx" />
-    <Content Include="Pages\Watch.aspx" />
     <Content Include="Content\addons.js" />
     <Content Include="Content\site.css" />
+    <Content Include="Pages\Components.aspx" />
+    <Content Include="Pages\EditGrid.aspx" />
+    <Content Include="Pages\Loading.aspx" />
+    <Content Include="Pages\PrePost.aspx" />
+    <Content Include="Pages\Mixin.aspx" />
+    <Content Include="Pages\PagedGrid.aspx" />
+    <Content Include="Pages\Todo.aspx" />
+    <Content Include="Pages\Upload.aspx" />
+    <Content Include="Pages\Watch.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +98,7 @@
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

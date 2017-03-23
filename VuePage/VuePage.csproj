@@ -50,23 +50,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Computed.cs" />
-    <Compile Include="Attributes.cs" />
-    <Compile Include="Component.cs" />
-    <Compile Include="VueHandler.cs" />
-    <Compile Include="VueContractResolver.cs" />
+    <Compile Include="Util\Computed.cs" />
+    <Compile Include="Util\Attributes.cs" />
+    <Compile Include="ViewModel.Static.cs" />
+    <Compile Include="Util\VueContractResolver.cs" />
     <Compile Include="JavascriptBuilder.cs" />
-    <Compile Include="JsExpressionVisitor.cs" />
-    <Compile Include="Page.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
+    <Compile Include="Util\JsExpressionVisitor.cs" />
+    <Compile Include="AppControl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\vue-ajaxget.js" />
-    <EmbeddedResource Include="Resources\vue-page.js" />
-    <EmbeddedResource Include="Resources\vue.js" />
+    <EmbeddedResource Include="Scripts\vue-ajaxget.js" />
+    <EmbeddedResource Include="Scripts\vue-page.js" />
+    <EmbeddedResource Include="Scripts\vue.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
