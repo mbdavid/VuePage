@@ -64,15 +64,18 @@ namespace Vue
 
             var writer = new StringBuilder();
 
-            writer.AppendLine("new Vue({");
+            writer.Append("new Vue({\n");
 
-            writer.AppendLine("  created: function() {");
-            writer.AppendLine("     this.$registerPageVM(this);");
-            writer.AppendLine("  },");
+            writer.Append("  created: function() {\n");
+            writer.Append("     this.$registerPageVM(this);\n");
+            writer.Append("  },\n");
 
-            writer.AppendLine("  mounted: function() {");
-            writer.AppendLine(_js.ToString());
-            writer.AppendLine("  },");
+            if (_js.Length > 0)
+            {
+                writer.Append("  mounted: function() {\n");
+                writer.Append(_js.ToString());
+                writer.Append("\n  },\n");
+            }
 
             RenderBody(writer, content);
 
@@ -94,27 +97,31 @@ namespace Vue
             // checks if prop name are different from viewmodel field
             props.ForEach((x) => { if(x.Name == x.Prop) throw new ArgumentException("[Vue.Prop] name must be different from view model property"); });
 
-            writer.AppendLine("{");
+            writer.Append("return {\n");
             writer.AppendFormat("  name: '{0}',\n", name);
             writer.AppendFormat("  props: [{0}],\n", string.Join(", ", props.Select(x => "'" + x.Prop + "'")));
 
-            writer.AppendLine("  created: function() {");
+            writer.Append("  created: function() {\n");
             writer.Append(string.Join("\n", props.Select(x => string.Format("    this.{0} = this.{1};", x.Name, x.Prop))));
-            writer.AppendLine(_js.ToString());
+
+            if (_js.Length > 0)
+            {
+                writer.Append(_js.ToString() + "\n");
+            }
 
             // only call Created method if created was override in component
             var created = GetType().GetMethod("OnCreated", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             if(created.GetBaseDefinition().DeclaringType != created.DeclaringType)
             {
-                writer.AppendLine("    this.$post('OnCreated', [], null, this);");
+                writer.Append("    this.$post('OnCreated', [], null, this);\n");
             }
 
-            writer.AppendLine("  },");
+            writer.Append("  },\n");
 
             RenderBody(writer, content);
 
-            writer.AppendLine("}");
+            writer.Append("}\n");
 
             return writer.ToString();
         }
@@ -126,55 +133,64 @@ namespace Vue
 
             writer.AppendFormat("  template: '{0}',\n", template);
             writer.AppendFormat("  data: function() {{ return {0}; }},\n", JsonConvert.SerializeObject(this, _serializeSettings));
-            writer.AppendLine("  methods: {");
 
-            var methods = this.GetType().GetMethods(BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(x => !x.IsSpecialName).ToArray();
+            var methods = this.GetType()
+                .GetMethods(BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(x => !x.IsSpecialName)
+                .ToArray();
 
-            foreach (var m in methods)
+            if (methods.Length > 0)
             {
-                // checks if method contains Script attribute (will run before call $post)
-                var pre = string.Join(";", m.GetCustomAttributes<PreScriptAttribute>(true)?.Select(x => x.Code + "\n        ") ?? new string[0]);
-                var post = string.Join(";", m.GetCustomAttributes<PostScriptAttribute>(true)?.Select(x => x.Code) ?? new string[0]);
+                writer.Append("  methods: {\n");
 
-                // get all parameters without HttpPostFile parameters
-                var parameters = m.GetParameters()
-                    .Where(x => x.ParameterType != typeof(HttpPostedFile) && x.ParameterType != typeof(List<HttpPostedFile>))
-                    .Select(x => x.Name);
+                foreach (var m in methods)
+                {
+                    // checks if method contains Script attribute (will run before call $post)
+                    var pre = string.Join(";", m.GetCustomAttributes<PreScriptAttribute>(true)?.Select(x => x.Code + "\n        ") ?? new string[0]);
+                    var post = string.Join(";", m.GetCustomAttributes<PostScriptAttribute>(true)?.Select(x => x.Code) ?? new string[0]);
 
-                // get if any parameter are file(s)
-                var upload = m.GetParameters()
-                    .Where(x => x.ParameterType == typeof(HttpPostedFile) || x.ParameterType == typeof(List<HttpPostedFile>))
-                    .Select(x => x.Name)
-                    .FirstOrDefault() ?? "null";
+                    // get all parameters without HttpPostFile parameters
+                    var parameters = m.GetParameters()
+                        .Where(x => x.ParameterType != typeof(HttpPostedFile) && x.ParameterType != typeof(List<HttpPostedFile>))
+                        .Select(x => x.Name);
 
-                writer.AppendFormat("    '{0}': function({1}) {{\n      {2}this.$post('{0}', [{3}], {4}, this){5};\n    }},\n", 
-                    m.Name,
-                    string.Join(", ", m.GetParameters().Select(x => x.Name)),
-                    pre, 
-                    string.Join(", ", parameters),
-                    upload,
-                    post.Length > 0 ? ".then(function(vm) { (function() { " + post + " }).call(vm); });" : ";");
+                    // get if any parameter are file(s)
+                    var upload = m.GetParameters()
+                        .Where(x => x.ParameterType == typeof(HttpPostedFile) || x.ParameterType == typeof(List<HttpPostedFile>))
+                        .Select(x => x.Name)
+                        .FirstOrDefault() ?? "null";
+
+                    writer.AppendFormat("    '{0}': function({1}) {{\n      {2}this.$post('{0}', [{3}], {4}, this){5};\n    }},\n",
+                        m.Name,
+                        string.Join(", ", m.GetParameters().Select(x => x.Name)),
+                        pre,
+                        string.Join(", ", parameters),
+                        upload,
+                        post.Length > 0 ? ".then(function(vm) { (function() { " + post + " }).call(vm); });" : ";");
+                }
+
+                writer.Length -= 2;
+                writer.Append("\n  },\n");
             }
-
-            writer.Length -= 2;
-            writer.AppendLine();
-            writer.AppendLine("  },");
-            writer.AppendLine("  computed: {");
 
             var computed = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)
-                .Where(x => x.FieldType == typeof(Computed));
+                .Where(x => x.FieldType == typeof(Computed))
+                .ToArray();
 
-            foreach (var c in computed)
+            if (computed.Length > 0)
             {
-                writer.AppendFormat("    '{0}': function() {{\n      return ({1})(this);\n    }},\n",
-                    c.Name,
-                    ((Computed)c.GetValue(this)).Code);
-            }
+                writer.Append("  computed: {\n");
 
-            writer.Length -= 2;
-            writer.AppendLine();
-            writer.AppendLine("  },");
-            writer.AppendLine("  watch: {");
+                foreach (var c in computed)
+                {
+                    writer.AppendFormat("    '{0}': function() {{\n      return ({1})(this);\n    }},\n",
+                        c.Name,
+                        ((Computed)c.GetValue(this)).Code);
+                }
+
+                writer.Length -= 2;
+                writer.Append("\n  },\n");
+            }
 
             // get all method marked with [Watch] attribute or ends with _Watch
             var watchs = this.GetType()
@@ -182,28 +198,45 @@ namespace Vue
                 .Where(x => x.Name.EndsWith("_Watch", StringComparison.InvariantCultureIgnoreCase) || x.GetCustomAttribute<WatchAttribute>() != null)
                 .ToArray();
 
-            foreach (var w in watchs)
+            if (watchs.Length > 0)
             {
-                // checks if method contains Script attribute (will run before call $post)
-                var script = w.GetCustomAttribute<PreScriptAttribute>(true)?.Code + "\n        ";
+                writer.Append("  watch: {\n");
 
-                var name = w.GetCustomAttribute<WatchAttribute>()?.Name ?? w.Name.Substring(0, w.Name.LastIndexOf("_"));
+                foreach (var w in watchs)
+                {
+                    // checks if method contains Script attribute (will run before call $post)
+                    var script = w.GetCustomAttribute<PreScriptAttribute>(true)?.Code + "\n        ";
 
-                writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{\n        if (this.$updating) return false;\n        {2}this.$post('{1}', [v, o], null, this);\n      }},\n      deep: true\n    }},\n", 
-                    name, w.Name, script);
+                    var name = w.GetCustomAttribute<WatchAttribute>()?.Name ?? w.Name.Substring(0, w.Name.LastIndexOf("_"));
+
+                    writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{\n        if (this.$updating) return false;\n        {2}this.$post('{1}', [v, o], null, this);\n      }},\n      deep: true\n    }},\n",
+                        name, w.Name, script);
+                }
+
+                writer.Length -= 2;
+                writer.Append("\n  },\n");
             }
 
-            writer.Length -= 2;
+            // if has style, add here
+            if (!string.IsNullOrEmpty(style))
+            {
+                var s = dotless.Core.Less.Parse(style)
+                    .Replace("\n", "\\n")
+                    .Replace("\r", "\\r")
+                    .Replace("\'", "\\'");
 
-            writer.AppendLine();
-            writer.Append("  }");
+                writer.AppendFormat("    'beforeCreate': function() {{ this.$addStyle('{0}'); }},\n", s);
+            }
 
             if(!string.IsNullOrEmpty(mixin))
             {
-                writer.Append(",\n");
-                writer.AppendFormat("    mixins: [(function() {{ {0} }})() || {{}}]",
+                writer.AppendFormat("    'mixins': [(function() {{ {0} }})() || {{}}],\n",
                     mixin);
             }
+
+            // remove last ,\n
+            writer.Length -= 2;
+            writer.Append("\n");
         }
 
         #endregion

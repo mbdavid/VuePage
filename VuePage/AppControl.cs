@@ -42,6 +42,7 @@ namespace Vue
                             control.RenderControl(w);
                         }
                     }
+
                     var viewModelType = GetViewModelType(control);
                     var vm = ViewModel.Load(viewModelType, Context);
 

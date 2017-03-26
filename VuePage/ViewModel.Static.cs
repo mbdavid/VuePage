@@ -95,7 +95,11 @@ namespace Vue
             script = code.ToString();
             style = css.ToString();
 
-            return HttpUtility.JavaScriptStringEncode(content.Trim());
+            //return HttpUtility.JavaScriptStringEncode(content.Trim());
+            return content.Trim()
+                .Replace("\r", "\\r")
+                .Replace("\n", "\\n")
+                .Replace("\'", "\\'");
         }
     }
 }

@@ -5,14 +5,11 @@
     {
         public int Counter { get; set; }
 
-        public CounterVM(HttpContext ctx)
+        protected override void OnCreated()
         {
-            this.Created += (s, e) =>
-            {
-                Counter = DateTime.Now.Second;
-                //JS.ConsoleLog("HttpContext works here? " + (ctx != null));
-                JS.Code("this.$el.classList.remove('hidden');");
-            };
+            Counter = DateTime.Now.Second;
+            //JS.ConsoleLog("HttpContext works here? " + (ctx != null));
+            JS.Code("this.$el.classList.remove('hidden');");
         }
 
         public void Increment()
@@ -24,3 +21,6 @@
 
 </script>
 <button @click="Increment()" class="hidden">{{ Counter }}</button>
+<style>
+    button { color: red; background-color: yellow; }
+</style>

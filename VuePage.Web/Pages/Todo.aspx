@@ -74,4 +74,8 @@
     FirstSelected: {{FirstSelected}}<br />
     FirstSelected: {{FirstSel}}<br />
 
+    <style>
+        h1 { color: red; }
+    </style>
+
 </asp:Content>

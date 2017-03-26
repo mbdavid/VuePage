@@ -46,36 +46,34 @@
 
     <script>
 
-        function loadComponent(name, resolve) {
-            var xhr = new XMLHttpRequest();
+        function loadComponent(name) {
+            return function (resolve, reject) {
+                var xhr = new XMLHttpRequest();
 
-            xhr.onload = function () {
-                if (xhr.status < 200 || xhr.status >= 400) {
-                    alert('Error on load component: ' + name);
-                    return;
-                }
+                xhr.onload = function () {
+                    if (xhr.status < 200 || xhr.status >= 400) {
+                        alert('Error on load component: ' + name);
+                        return;
+                    }
 
-                console.log('js=', xhr.responseText)
+                    var c = new Function(xhr.responseText);
 
-                resolve(new Function(xhr.responseText));
-            };
+                    resolve(c());
+                };
 
-            //log('$loadComponent ("' + name + '")');
+                //log('$loadComponent ("' + name + '")');
 
-            xhr.open('GET', location.pathname + '?component=' + name, true);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            xhr.send();
+                xhr.open('GET', location.pathname + '?component=' + name, true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.send();
+            }
         }
 
 
         return {
             components: {
-                counter: function (r) {
-                    loadComponent('Counter', r);
-                },
-                inputbox: function (r) {
-                    loadComponent('InputBox', r);
-                }
+                counter: loadComponent('Counter'),
+                inputbox: loadComponent('InputBox')
             }
         }
 
