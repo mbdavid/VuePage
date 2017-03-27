@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace Vue
 {
@@ -42,6 +37,20 @@ namespace Vue
             var loader = new UserControl();
 
             return loader.LoadControl("~/Components/" + name + ".ascx");
+        }
+
+        internal static IEnumerable<string> FindComponents(HttpContext context)
+        {
+            var path = context.Server.MapPath("~/Components/");
+            var files = Directory.GetFiles(path, "*.ascx", SearchOption.TopDirectoryOnly);
+            var loader = new UserControl();
+
+            foreach(var name in files.Select(x => Path.GetFileNameWithoutExtension(x)))
+            {
+                var control = loader.LoadControl("~/Components/" + name + ".ascx");
+
+                yield return control.GetType().Name;
+            }
         }
 
         /// <summary>
@@ -95,11 +104,7 @@ namespace Vue
             script = code.ToString();
             style = css.ToString();
 
-            //return HttpUtility.JavaScriptStringEncode(content.Trim());
-            return content.Trim()
-                .Replace("\r", "\\r")
-                .Replace("\n", "\\n")
-                .Replace("\'", "\\'");
+            return JavascriptBuilder.Encode(content.Trim());
         }
     }
 }

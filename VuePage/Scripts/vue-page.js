@@ -3,7 +3,7 @@
     // register Vue.$loading function
     var _loading = Vue.$loading = new Loading();
 
-    // register vue plugin to server call (vue.$post)
+    // register vue plugin to server call (vue.$update)
     Vue.use({
         install: function (vue) {
 
@@ -14,7 +14,7 @@
             vue.prototype.$updating = false;
 
             // request new server call
-            vue.prototype.$post = function $post(name, params, files, vm) {
+            vue.prototype.$update = function $update(name, params, files, vm) {
 
                 var target = (event ? event.target : document.body) || document.body;
 
@@ -131,7 +131,7 @@
                     });
                 }
 
-                log('$post ("' + request.name + '") = ', request.params);
+                log('$update ("' + request.name + '") = ', request.params);
 
                 xhr.open('POST', location.href, true);
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -154,6 +154,29 @@
             }
         }
     });
+
+    // Load async component
+    Vue.$loadComponent = function $loadComponent(name) {
+        return function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+
+            xhr.onload = function () {
+                if (xhr.status < 200 || xhr.status >= 400) {
+                    alert('Error on load component: ' + name);
+                    return;
+                }
+
+                var c = new Function(xhr.responseText);
+
+                resolve(c());
+            };
+            //log('$loadComponent ("' + name + '")');
+
+            xhr.open('GET', location.pathname + '?_name=' + name, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.send();
+        }
+    };
 
     // Loading state machine (with delay)
     function Loading() {

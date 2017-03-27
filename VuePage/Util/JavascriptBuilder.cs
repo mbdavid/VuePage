@@ -68,5 +68,13 @@ namespace Vue
         {
             return _sb.ToString();
         }
+
+        public static string Encode(string str)
+        {
+            return (str ?? "")
+                .Replace("\r", "\\r")
+                .Replace("\n", "\\n")
+                .Replace("\'", "\\'");
+        }
     }
 }

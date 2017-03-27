@@ -57,7 +57,7 @@
     <Compile Include="Util\Attributes.cs" />
     <Compile Include="ViewModel.Static.cs" />
     <Compile Include="Util\VueContractResolver.cs" />
-    <Compile Include="JavascriptBuilder.cs" />
+    <Compile Include="Util\JavascriptBuilder.cs" />
     <Compile Include="Util\JsExpressionVisitor.cs" />
     <Compile Include="AppControl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

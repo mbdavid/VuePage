@@ -68,6 +68,7 @@
   <ItemGroup>
     <Content Include="Components\Counter.ascx" />
     <Content Include="Components\InputBox.ascx" />
+    <None Include="Content\base.less" />
     <Content Include="Default.aspx" />
     <Content Include="Content\addons.js" />
     <Content Include="Content\site.css" />

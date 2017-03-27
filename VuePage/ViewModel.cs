@@ -1,22 +1,18 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Security.Principal;
 using System.Text;
 using System.Web;
-using System.Web.UI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace Vue
 {
     public partial class ViewModel : IDisposable
     {
+        #region Properties/Virtual Methods
+
         private JavascriptBuilder _js = new JavascriptBuilder();
         private JsonSerializerSettings _serializeSettings = new JsonSerializerSettings
         {
@@ -25,15 +21,15 @@ namespace Vue
             ContractResolver = VueContractResolver.Instance
         };
 
+        /// <summary>
+        /// Get instance of Javascript builder to be run after update/create vue instance
+        /// </summary>
         protected JavascriptBuilder JS { get { return _js; } }
 
+        /// <summary>
+        /// Get current HttpContext
+        /// </summary>
         protected HttpContext Context { get; private set; }
-
-        public ViewModel()
-        {
-        }
-
-        #region Init
 
         /// <summary>
         /// Called after create instance and set Context object
@@ -41,10 +37,6 @@ namespace Vue
         protected virtual void OnInit()
         {
         }
-
-        #endregion
-
-        #region Created
 
         /// <summary>
         /// In page call during initialize. In component, made ajax call when component are created
@@ -57,6 +49,9 @@ namespace Vue
 
         #region RenderScript
 
+        /// <summary>
+        /// Execute on Vue are inside a page
+        /// </summary>
         public virtual string RenderControl(string id, string content)
         {
             // created event are called when render initilize
@@ -84,6 +79,9 @@ namespace Vue
             return writer.ToString();
         }
 
+        /// <summary>
+        /// Render viewmodel as component
+        /// </summary>
         public virtual string RenderComponent(string name, string content)
         {
             var writer = new StringBuilder();
@@ -114,7 +112,7 @@ namespace Vue
 
             if(created.GetBaseDefinition().DeclaringType != created.DeclaringType)
             {
-                writer.Append("    this.$post('OnCreated', [], null, this);\n");
+                writer.Append("    this.$update('OnCreated', [], null, this);\n");
             }
 
             writer.Append("  },\n");
@@ -145,7 +143,7 @@ namespace Vue
 
                 foreach (var m in methods)
                 {
-                    // checks if method contains Script attribute (will run before call $post)
+                    // checks if method contains Script attribute (will run before call $update)
                     var pre = string.Join(";", m.GetCustomAttributes<PreScriptAttribute>(true)?.Select(x => x.Code + "\n        ") ?? new string[0]);
                     var post = string.Join(";", m.GetCustomAttributes<PostScriptAttribute>(true)?.Select(x => x.Code) ?? new string[0]);
 
@@ -160,7 +158,7 @@ namespace Vue
                         .Select(x => x.Name)
                         .FirstOrDefault() ?? "null";
 
-                    writer.AppendFormat("    '{0}': function({1}) {{\n      {2}this.$post('{0}', [{3}], {4}, this){5};\n    }},\n",
+                    writer.AppendFormat("    '{0}': function({1}) {{\n      {2}this.$update('{0}', [{3}], {4}, this){5};\n    }},\n",
                         m.Name,
                         string.Join(", ", m.GetParameters().Select(x => x.Name)),
                         pre,
@@ -204,12 +202,12 @@ namespace Vue
 
                 foreach (var w in watchs)
                 {
-                    // checks if method contains Script attribute (will run before call $post)
+                    // checks if method contains Script attribute (will run before call $update)
                     var script = w.GetCustomAttribute<PreScriptAttribute>(true)?.Code + "\n        ";
 
                     var name = w.GetCustomAttribute<WatchAttribute>()?.Name ?? w.Name.Substring(0, w.Name.LastIndexOf("_"));
 
-                    writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{\n        if (this.$updating) return false;\n        {2}this.$post('{1}', [v, o], null, this);\n      }},\n      deep: true\n    }},\n",
+                    writer.AppendFormat("    '{0}': {{\n      handler: function(v, o) {{\n        if (this.$updating) return false;\n        {2}this.$update('{1}', [v, o], null, this);\n      }},\n      deep: true\n    }},\n",
                         name, w.Name, script);
                 }
 
@@ -220,12 +218,17 @@ namespace Vue
             // if has style, add here
             if (!string.IsNullOrEmpty(style))
             {
-                var s = dotless.Core.Less.Parse(style)
-                    .Replace("\n", "\\n")
-                    .Replace("\r", "\\r")
-                    .Replace("\'", "\\'");
+                try
+                {
+                    var css = JavascriptBuilder.Encode(dotless.Core.Less.Parse(style));
 
-                writer.AppendFormat("    'beforeCreate': function() {{ this.$addStyle('{0}'); }},\n", s);
+                    writer.AppendFormat("    'beforeCreate': function() {{ this.$addStyle('{0}'); }},\n", css);
+                }
+                catch (Exception ex)
+                {
+                    writer.AppendFormat("    'beforeCreate': function() {{ alert('{0}'); }},\n", ex.Message);
+                }
+
             }
 
             if(!string.IsNullOrEmpty(mixin))

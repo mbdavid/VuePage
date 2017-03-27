@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" ClassName="Counter" %>
+﻿<%@ Control Language="C#" ClassName="counter" %>
 <script runat="server">
 
     public class CounterVM : ViewModel
@@ -20,7 +20,7 @@
     }
 
 </script>
-<button @click="Increment()" class="hidden">{{ Counter }}</button>
+<button data-scope-counter @click="Increment()" class="hidden">{{ Counter }}</button>
 <style>
-    button { color: red; background-color: yellow; }
+    button[data-scope-counter] { color: red; background-color: yellow; }
 </style>
