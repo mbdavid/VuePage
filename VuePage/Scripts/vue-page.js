@@ -112,8 +112,8 @@
                 // create form with all data
                 var form = new FormData();
 
-                if (request.vm.$options.name) {
-                    form.append('_name', request.vm.$options.name);
+                if (request.vm.$options.path) {
+                    form.append('_path', request.vm.$options.path);
                 }
 
                 form.append('_method', request.name);
@@ -172,7 +172,7 @@
             };
             //log('$loadComponent ("' + name + '")');
 
-            xhr.open('GET', location.pathname + '?_name=' + name, true);
+            xhr.open('GET', location.pathname + '?_path=' + name, true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.send();
         }

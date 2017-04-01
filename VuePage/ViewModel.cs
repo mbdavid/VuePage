@@ -82,7 +82,7 @@ namespace Vue
         /// <summary>
         /// Render viewmodel as component
         /// </summary>
-        public virtual string RenderComponent(string name, string content)
+        public virtual string RenderComponent(string path, string content)
         {
             var writer = new StringBuilder();
 
@@ -96,7 +96,7 @@ namespace Vue
             props.ForEach((x) => { if(x.Name == x.Prop) throw new ArgumentException("[Vue.Prop] name must be different from view model property"); });
 
             writer.Append("return {\n");
-            writer.AppendFormat("  name: '{0}',\n", name);
+            writer.AppendFormat("  path: '{0}',\n", path);
             writer.AppendFormat("  props: [{0}],\n", string.Join(", ", props.Select(x => "'" + x.Prop + "'")));
 
             writer.Append("  created: function() {\n");

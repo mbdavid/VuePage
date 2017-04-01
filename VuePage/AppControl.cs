@@ -24,16 +24,17 @@ namespace Vue
             {
                 var isPost = Page.Request.HttpMethod == "POST";
                 var isAjax = Page.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
-                var name = Page.Request.QueryString["_name"];
+                var path = Page.Request.QueryString["_path"];
 
                 if (isAjax && isPost)
                 {
                     // update model in ajax/post call (could be from a component)
                     UpdateModel();
                 }
-                else if(isAjax && !isPost && name != null)
+                else if(isAjax && !isPost && path != null)
                 {
-                    var control = ViewModel.FindComponent(name);
+                    // render component ascx
+                    var control = this.Page.LoadControl(path);
                     var sb = new StringBuilder();
 
                     using (var sw = new StringWriter(sb))
@@ -47,7 +48,7 @@ namespace Vue
                     var viewModelType = GetViewModelType(control);
                     var vm = ViewModel.Load(viewModelType, Context);
 
-                    Page.Response.Write(vm.RenderComponent(name, sb.ToString()));
+                    Page.Response.Write(vm.RenderComponent(path, sb.ToString()));
                     Page.Response.End();
                 }
                 else if (!isAjax)
@@ -61,13 +62,13 @@ namespace Vue
         private void RegisterScripts()
         {
             // reigster all scripts at begin tag (thats why are inverted)
-            var components = ViewModel.FindComponents(Context).ToArray();
+            var components = VueComponent.FindComponents(Context).ToArray();
 
             if (components.Length > 0)
             {
-                var r = string.Join("\n", components.Select(x => "Vue.component('" + x + "', Vue.$loadComponent('" + x + "'));"));
+                var r = string.Join("\n", components.Select(x => $"Vue.component('{x.Name}', Vue.$loadComponent('{x.Path}'));"));
 
-                Page.Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script>\n{0}\n</script>\n", r)));
+                Page.Header.Controls.AddAt(0, new ASP.LiteralControl($"<script>\n{r}\n</script>\n"));
             }
 
             Page.Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", Page.ClientScript.GetWebResourceUrl(typeof(AppControl), "VuePage.Scripts.vue-ajaxget.js"))));
@@ -77,7 +78,7 @@ namespace Vue
 
         protected override void Render(ASP.HtmlTextWriter writer)
         {
-            writer.WriteLine("<div id='" + ClientID + "'></div>");
+            writer.WriteLine($"<div id='{ClientID}'></div>");
             writer.WriteLine("<script>");
             writer.WriteLine("(function() {");
 
@@ -97,14 +98,14 @@ namespace Vue
             var request = Page.Request;
             var response = Page.Response;
 
-            var name = request.Form["_name"];
+            var path = request.Form["_path"];
             var model = request.Form["_model"];
             var method = request.Form["_method"];
             var parameters = JArray.Parse(request.Form["_params"]).ToArray();
             var files = request.Files.GetMultiple("_files");
             var update = string.Empty;
 
-            var control = name == null ? this.Page : ViewModel.FindComponent(name);
+            var control = path == null ? this.Page : this.Page.LoadControl(path);
             var viewModelType = GetViewModelType(control);
 
             // load viewModel

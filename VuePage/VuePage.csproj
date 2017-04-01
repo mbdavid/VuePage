@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Util\Computed.cs" />
     <Compile Include="Util\Attributes.cs" />
+    <Compile Include="VueComponent.cs" />
     <Compile Include="ViewModel.Static.cs" />
     <Compile Include="Util\VueContractResolver.cs" />
     <Compile Include="Util\JavascriptBuilder.cs" />

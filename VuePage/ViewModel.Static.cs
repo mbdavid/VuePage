@@ -30,29 +30,6 @@ namespace Vue
 
         #endregion
 
-        internal static Control FindComponent(string name)
-        {
-            if (string.IsNullOrEmpty(name)) return null;
-
-            var loader = new UserControl();
-
-            return loader.LoadControl("~/Components/" + name + ".ascx");
-        }
-
-        internal static IEnumerable<string> FindComponents(HttpContext context)
-        {
-            var path = context.Server.MapPath("~/Components/");
-            var files = Directory.GetFiles(path, "*.ascx", SearchOption.TopDirectoryOnly);
-            var loader = new UserControl();
-
-            foreach(var name in files.Select(x => Path.GetFileNameWithoutExtension(x)))
-            {
-                var control = loader.LoadControl("~/Components/" + name + ".ascx");
-
-                yield return control.GetType().Name;
-            }
-        }
-
         /// <summary>
         /// Create new instance based on ViewModel type
         /// </summary>
