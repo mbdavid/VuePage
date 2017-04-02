@@ -60,8 +60,10 @@ namespace Vue
 
         internal static string ParseTemplate(string content, out string script, out string style)
         {
-            var reScript = new Regex(@"<script?\b[^>]*>([\s\S]*?)<\/script>");
-            var reStyle = new Regex(@"<style?\b[^>]*>([\s\S]*?)<\/style>");
+            var reScript = new Regex(@"<script?\b[^>]*>([\s\S]*?)<\/script>", RegexOptions.IgnoreCase);
+            var reStyle = new Regex(@"<style\s*(scoped)?\b[^>]*>([\s\S]*?)<\/style>", RegexOptions.IgnoreCase);
+            var reTag = new Regex(@"^\s*<\w+");
+            var isScoped = false;
 
             var code = new StringBuilder();
             var css = new StringBuilder();
@@ -74,9 +76,24 @@ namespace Vue
 
             content = reStyle.Replace(content, (m) =>
             {
-                css.Append(m.Groups[1].Value);
+                if (m.Groups[1].Value.Length > 0) isScoped = true;
+
+                css.Append(m.Groups[2].Value);
                 return "";
             });
+
+            // add scoped style
+            if (isScoped)
+            {
+                var scope = "s" + Guid.NewGuid().ToString("n").Substring(0, 5);
+                css.Insert(0, $"[data-{scope}] {{ ");
+                css.Append(" }");
+
+                content = reTag.Replace(content, (m) =>
+                {
+                    return m.Value + $" data-{scope} ";
+                });
+            }
 
             script = code.ToString();
             style = css.ToString();

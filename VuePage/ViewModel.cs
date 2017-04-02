@@ -61,8 +61,9 @@ namespace Vue
 
             writer.Append("new Vue({\n");
 
+            writer.AppendFormat("  elementId: '{0}',\n", id);
             writer.Append("  created: function() {\n");
-            writer.Append("     this.$registerPageVM(this);\n");
+            writer.Append("     this.$registerPage(this);\n");
             writer.Append("  },\n");
 
             if (_js.Length > 0)
@@ -82,7 +83,7 @@ namespace Vue
         /// <summary>
         /// Render viewmodel as component
         /// </summary>
-        public virtual string RenderComponent(string path, string content)
+        public virtual string RenderComponent(string vpath, string content)
         {
             var writer = new StringBuilder();
 
@@ -96,7 +97,7 @@ namespace Vue
             props.ForEach((x) => { if(x.Name == x.Prop) throw new ArgumentException("[Vue.Prop] name must be different from view model property"); });
 
             writer.Append("return {\n");
-            writer.AppendFormat("  path: '{0}',\n", path);
+            writer.AppendFormat("  vpath: '{0}',\n", vpath);
             writer.AppendFormat("  props: [{0}],\n", string.Join(", ", props.Select(x => "'" + x.Prop + "'")));
 
             writer.Append("  created: function() {\n");
@@ -220,15 +221,21 @@ namespace Vue
             {
                 try
                 {
-                    var css = JavascriptBuilder.Encode(dotless.Core.Less.Parse(style));
+                    var config = new dotless.Core.configuration.DotlessConfiguration
+                    {
+                        MinifyOutput = true,
+                        Web = true,
+                        MapPathsToWeb = true
+                    };
+
+                    var css = JavascriptBuilder.Encode(dotless.Core.LessWeb.Parse(style, config));
 
                     writer.AppendFormat("    'beforeCreate': function() {{ this.$addStyle('{0}'); }},\n", css);
                 }
                 catch (Exception ex)
                 {
-                    writer.AppendFormat("    'beforeCreate': function() {{ alert('{0}'); }},\n", ex.Message);
+                    writer.AppendFormat("    'beforeCreate': function() {{ alert('{0}'); }},\n", HttpUtility.JavaScriptStringEncode(ex.Message));
                 }
-
             }
 
             if(!string.IsNullOrEmpty(mixin))

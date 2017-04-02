@@ -2,7 +2,7 @@
 
     // register Vue.$loading function
     var _loading = Vue.$loading;
-    var _vm = [];
+    var _current = null;
 
     // register vue plugin to server call ($navigate & $registerPageVM)
     Vue.use({
@@ -12,8 +12,8 @@
             vue.prototype.$navigate = navigate;
 
             // register page view model (destroy before)
-            vue.prototype.$registerPageVM = function (vm) {
-                _vm.push(vm);
+            vue.prototype.$registerPage = function (vm) {
+                _current = vm;
             }
         }
     });
@@ -25,7 +25,7 @@
 
         log('$navigate: ' + url);
 
-        // if navToPage came from Back button, do not push state
+        // if navigate came from Back button, do not add in push state
         if (location.href != url) {
             history.pushState(null, null, url);
         }
@@ -49,9 +49,8 @@
             var title = (/<title[^>]*>([\s\S]*)<\/title>/gm.exec(html) || [null, ''])[1];
             var tags = re.exec(response);
 
-            // destroy all old vms
-            _vm.forEach(function (vm) { vm.$destroy(); });
-            _vm = [];
+            // destroy current vm
+            _current.$destroy();
 
             // set new page content
             document.body.innerHTML = body;

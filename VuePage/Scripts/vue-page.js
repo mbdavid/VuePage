@@ -113,7 +113,7 @@
                 var form = new FormData();
 
                 if (request.vm.$options.path) {
-                    form.append('_path', request.vm.$options.path);
+                    form.append('_vpath', request.vm.$options.vpath);
                 }
 
                 form.append('_method', request.name);
@@ -155,24 +155,27 @@
         }
     });
 
-    // Load async component
-    Vue.$loadComponent = function $loadComponent(name) {
+    // Load async component from current page (use be a page using <vue:AppControl)
+    Vue.$loadComponent = function $loadComponent(vpath) {
         return function (resolve, reject) {
             var xhr = new XMLHttpRequest();
 
             xhr.onload = function () {
                 if (xhr.status < 200 || xhr.status >= 400) {
-                    alert('Error on load component: ' + name);
+                    alert('Error on load component: ' + vpath);
                     return;
                 }
-
-                var c = new Function(xhr.responseText);
-
-                resolve(c());
+                try {
+                    var fn = new Function(xhr.responseText);
+                    var options = fn();
+                    resolve(options);
+                }
+                catch (e) {
+                    alert(e);
+                }
             };
-            //log('$loadComponent ("' + name + '")');
 
-            xhr.open('GET', location.pathname + '?_path=' + name, true);
+            xhr.open('GET', location.pathname + '?_path=' + vpath, true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.send();
         }

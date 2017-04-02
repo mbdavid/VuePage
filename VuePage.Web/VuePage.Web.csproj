@@ -80,6 +80,7 @@
     <Content Include="Pages\PagedGrid.aspx" />
     <Content Include="Pages\Todo.aspx" />
     <Content Include="Pages\Upload.aspx" />
+    <Content Include="Pages\Less.aspx" />
     <Content Include="Pages\Watch.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>

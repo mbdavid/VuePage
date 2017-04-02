@@ -24,17 +24,17 @@ namespace Vue
             {
                 var isPost = Page.Request.HttpMethod == "POST";
                 var isAjax = Page.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
-                var path = Page.Request.QueryString["_path"];
+                var vpath = Page.Request.QueryString["_vpath"];
 
                 if (isAjax && isPost)
                 {
                     // update model in ajax/post call (could be from a component)
                     UpdateModel();
                 }
-                else if(isAjax && !isPost && path != null)
+                else if(isAjax && !isPost && vpath != null)
                 {
                     // render component ascx
-                    var control = this.Page.LoadControl(path);
+                    var control = this.Page.LoadControl(vpath);
                     var sb = new StringBuilder();
 
                     using (var sw = new StringWriter(sb))
@@ -48,7 +48,7 @@ namespace Vue
                     var viewModelType = GetViewModelType(control);
                     var vm = ViewModel.Load(viewModelType, Context);
 
-                    Page.Response.Write(vm.RenderComponent(path, sb.ToString()));
+                    Page.Response.Write(vm.RenderComponent(vpath, sb.ToString()));
                     Page.Response.End();
                 }
                 else if (!isAjax)
@@ -98,14 +98,14 @@ namespace Vue
             var request = Page.Request;
             var response = Page.Response;
 
-            var path = request.Form["_path"];
+            var vpath = request.Form["_vpath"];
             var model = request.Form["_model"];
             var method = request.Form["_method"];
             var parameters = JArray.Parse(request.Form["_params"]).ToArray();
             var files = request.Files.GetMultiple("_files");
             var update = string.Empty;
 
-            var control = path == null ? this.Page : this.Page.LoadControl(path);
+            var control = vpath == null ? this.Page : this.Page.LoadControl(vpath);
             var viewModelType = GetViewModelType(control);
 
             // load viewModel

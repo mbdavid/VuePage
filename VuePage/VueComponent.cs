@@ -14,21 +14,52 @@ namespace Vue
 {
     public class VueComponent
     {
+        private static Dictionary<string, VueComponent> _components = null;
+
         public string Name { get; set; }
         public string Path { get; set; }
 
+        public static void Register(string name, string virtualPath)
+        {
+            if (_components == null) Discovery();
+
+            _components[name] = new VueComponent
+            {
+                Name = name,
+                Path = virtualPath
+            };
+        }
+
         internal static IEnumerable<VueComponent> FindComponents(HttpContext context)
         {
-            var dir = context.Server.MapPath("~/Components/");
-            var files = Directory.GetFiles(dir, "*.ascx", SearchOption.TopDirectoryOnly);
+            if (_components == null) Discovery();
+
+            return _components.Values;
+        }
+
+        public static void Discovery(string virtualRoot = "~/Components/")
+        {
+            if (_components == null) _components = new Dictionary<string, VueComponent>();
+
+            var server = HttpContext.Current.Server;
+            var path = server.MapPath(virtualRoot);
+            var files = Directory.GetFiles(path, "*.ascx", SearchOption.AllDirectories);
             var loader = new UserControl();
 
-            foreach (var name in files.Select(x => System.IO.Path.GetFileNameWithoutExtension(x)))
+            foreach (var file in files)
             {
-                var path = "~/Components/" + name + ".ascx";
-                var control = loader.LoadControl(path);
+                var vpath = file.Replace(server.MapPath("~/"), "~/").Replace(@"\", "/");
+                var control = loader.LoadControl(vpath);
 
-                yield return new VueComponent { Name = control.GetType().Name, Path = path };
+                if (control == null) throw new FileNotFoundException($"Control {vpath} not found");
+
+                var component = new VueComponent
+                {
+                    Name = control.GetType().Name,
+                    Path = vpath
+                };
+
+                _components.Add(component.Name, component);
             }
         }
     }
