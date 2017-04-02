@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,6 +15,8 @@ namespace Vue
 {
     public partial class ViewModel : IDisposable
     {
+        internal static bool IsAjaxGetEnabled = !(ConfigurationManager.AppSettings["vue.ajaxget"] == "false");
+
         #region Computed
 
         /// <summary>

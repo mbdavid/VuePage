@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -71,7 +72,11 @@ namespace Vue
                 Page.Header.Controls.AddAt(0, new ASP.LiteralControl($"<script>\n{r}\n</script>\n"));
             }
 
-            Page.Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", Page.ClientScript.GetWebResourceUrl(typeof(AppControl), "VuePage.Scripts.vue-ajaxget.js"))));
+            if (ViewModel.IsAjaxGetEnabled)
+            {
+                Page.Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", Page.ClientScript.GetWebResourceUrl(typeof(AppControl), "VuePage.Scripts.vue-ajaxget.js"))));
+            }
+
             Page.Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", Page.ClientScript.GetWebResourceUrl(typeof(AppControl), "VuePage.Scripts.vue-page.js"))));
             Page.Header.Controls.AddAt(0, new ASP.LiteralControl(string.Format("<script src=\"{0}\"></script>\n", Page.ClientScript.GetWebResourceUrl(typeof(AppControl), "VuePage.Scripts.vue.js"))));
         }

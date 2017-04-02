@@ -175,7 +175,7 @@
                 }
             };
 
-            xhr.open('GET', location.pathname + '?_path=' + vpath, true);
+            xhr.open('GET', location.pathname + '?_vpath=' + vpath, true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.send();
         }

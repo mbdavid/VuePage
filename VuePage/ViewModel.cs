@@ -61,10 +61,12 @@ namespace Vue
 
             writer.Append("new Vue({\n");
 
-            writer.AppendFormat("  elementId: '{0}',\n", id);
-            writer.Append("  created: function() {\n");
-            writer.Append("     this.$registerPage(this);\n");
-            writer.Append("  },\n");
+            if (IsAjaxGetEnabled)
+            {
+                writer.Append("  created: function() {\n");
+                writer.Append("     this.$registerPage(this);\n");
+                writer.Append("  },\n");
+            }
 
             if (_js.Length > 0)
             {
