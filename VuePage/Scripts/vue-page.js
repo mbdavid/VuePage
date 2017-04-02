@@ -112,7 +112,7 @@
                 // create form with all data
                 var form = new FormData();
 
-                if (request.vm.$options.path) {
+                if (request.vm.$options.vpath) {
                     form.append('_vpath', request.vm.$options.vpath);
                 }
 

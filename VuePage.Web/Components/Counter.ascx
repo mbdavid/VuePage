@@ -8,7 +8,6 @@
         protected override void OnCreated()
         {
             Counter = DateTime.Now.Second;
-            //JS.ConsoleLog("HttpContext works here? " + (ctx != null));
             JS.Code("this.$el.classList.remove('hidden');");
         }
 
