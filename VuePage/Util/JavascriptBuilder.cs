@@ -30,7 +30,14 @@ namespace Vue
 
         public JavascriptBuilder NavigateTo(string url)
         {
-            return Code("this.$navigate('{0}');", HttpUtility.JavaScriptStringEncode(url));
+            if (ViewModel.IsAjaxGetEnabled)
+            {
+                return Code("this.$navigate('{0}');", HttpUtility.JavaScriptStringEncode(url));
+            }
+            else
+            {
+                return RedirectTo(url);
+            }
         }
 
         public JavascriptBuilder RedirectTo(string url)
