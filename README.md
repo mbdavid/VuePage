@@ -1,3 +1,5 @@
+> VuePage now is DotVue - https://github.com/mbdavid/DotVue
+
 # VuePage
 
 Implement server-side of ViewModel for `Vue` on WebForm page.
